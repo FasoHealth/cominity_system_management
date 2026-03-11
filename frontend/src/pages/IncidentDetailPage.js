@@ -40,6 +40,10 @@ const createColoredMarker = (color) => L.divIcon({
     popupAnchor: [0, -10],
 });
 
+const getImageUrl = (path) => {
+    return process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/${path}` : `/${path}`;
+};
+
 const IncidentDetailPage = () => {
     const { id } = useParams();
     const { user } = useAuth();
@@ -156,7 +160,7 @@ const IncidentDetailPage = () => {
                             <h3 className="card-title" style={{ marginBottom: '16px' }}>Photos</h3>
                             <div className="grid-2">
                                 {incident.images.map((img, i) => (
-                                    <img key={i} src={`/${img.path}`} alt="" style={{ borderRadius: 'var(--radius-md)', width: '100%', aspectRatio: '16/9', objectFit: 'cover', cursor: 'pointer' }} onClick={() => window.open(`/${img.path}`, '_blank')} />
+                                    <img key={i} src={getImageUrl(img.path)} alt="" style={{ borderRadius: 'var(--radius-md)', width: '100%', aspectRatio: '16/9', objectFit: 'cover', cursor: 'pointer' }} onClick={() => window.open(getImageUrl(img.path), '_blank')} />
                                 ))}
                             </div>
                         </div>

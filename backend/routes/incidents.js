@@ -12,7 +12,7 @@ const { body, validationResult } = require('express-validator');
 const Incident = require('../models/Incident');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
-const { protect, adminOnly } = require('../middleware/auth');
+const { protect, adminOnly, optionalAuth } = require('../middleware/auth');
 
 // ── Configuration Multer ──────────────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -231,7 +231,7 @@ router.post(
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/incidents/:id — Détail d'un incident
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
     try {
         const incident = await Incident.findById(req.params.id)
             .populate('reportedBy', 'name')
@@ -245,9 +245,16 @@ router.get('/:id', async (req, res) => {
         incident.views += 1;
         await incident.save({ validateBeforeSave: false });
 
-        // Masquer l'auteur si anonyme
+        // Masquer l'auteur si anonyme et que l'utilisateur actuel n'est ni l'auteur ni un admin
         const response = incident.toObject();
-        if (response.isAnonymous) response.reportedBy = null;
+        if (response.isAnonymous) {
+            const isAuthor = req.user && response.reportedBy && req.user._id.toString() === response.reportedBy._id.toString();
+            const isAdmin = req.user && req.user.role === 'admin';
+
+            if (!isAuthor && !isAdmin) {
+                response.reportedBy = null;
+            }
+        }
 
         res.json({ success: true, incident: response });
     } catch (err) {
