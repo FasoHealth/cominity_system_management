@@ -43,45 +43,40 @@ const AdminDashboardPage = () => {
 
     return (
         <div className="page-container fade-in">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                    <h1 className="page-title">🛡️ Administration</h1>
-                    <p className="page-subtitle">Vue d'ensemble de l'activité et des statistiques du système.</p>
-                </div>
-                <div style={{
-                    background: 'linear-gradient(135deg, var(--brand-navy), var(--brand-navy-light))',
-                    color: 'rgba(255,255,255,0.7)', padding: '8px 16px', borderRadius: 8, fontSize: '0.8rem'
-                }}>
-                    ⚡ Mode Administrateur
-                </div>
+            <div className="page-header">
+                <h1 className="page-title">Administration 🛡️</h1>
+                <p className="page-subtitle">Vue d'ensemble de l'activité du système.</p>
             </div>
 
-            <div className="grid-4" style={{ marginBottom: '28px' }}>
+            <div className="grid-4" style={{ marginBottom: '32px' }}>
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(232,84,26,0.12)', color: 'var(--brand-orange)' }}>🚨</div>
+                    <div className="stat-icon" style={{ background: 'var(--red-glow)', color: 'var(--red)' }}>🚨</div>
                     <div className="stat-info">
-                        <div className="stat-value" style={{ color: 'var(--brand-orange)' }}>{stats?.incidents?.total}</div>
+                        <div className="stat-value">{stats?.incidents?.total}</div>
                         <div className="stat-label">Total Incidents</div>
                     </div>
                 </div>
+
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'var(--yellow-bg)', color: 'var(--yellow)' }}>⌛</div>
+                    <div className="stat-icon" style={{ background: 'rgba(234,179,8,0.15)', color: '#eab308' }}>⌛</div>
                     <div className="stat-info">
-                        <div className="stat-value" style={{ color: 'var(--yellow)' }}>{stats?.incidents?.pending}</div>
+                        <div className="stat-value" style={{ color: '#eab308' }}>{stats?.incidents?.pending}</div>
                         <div className="stat-label">À Modérer</div>
                     </div>
                 </div>
+
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'var(--blue-bg)', color: 'var(--blue)' }}>✔️</div>
+                    <div className="stat-icon" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>✔️</div>
                     <div className="stat-info">
-                        <div className="stat-value" style={{ color: 'var(--blue)' }}>{stats?.incidents?.approved}</div>
-                        <div className="stat-label">Approuvés</div>
+                        <div className="stat-value" style={{ color: '#3b82f6' }}>{stats?.incidents?.approved}</div>
+                        <div className="stat-label">Affaires Approuvées</div>
                     </div>
                 </div>
+
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'var(--green-bg)', color: 'var(--green)' }}>🏆</div>
+                    <div className="stat-icon" style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>🤝</div>
                     <div className="stat-info">
-                        <div className="stat-value" style={{ color: 'var(--green)' }}>{stats?.incidents?.resolved}</div>
+                        <div className="stat-value">{stats?.incidents?.resolved}</div>
                         <div className="stat-label">Cas Résolus</div>
                     </div>
                 </div>

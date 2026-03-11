@@ -15,7 +15,6 @@ const incidentRoutes = require('./routes/incidents');
 const userRoutes = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
 const messageRoutes = require('./routes/messages');
-const guideRoutes = require('./routes/guides');
 
 const app = express();
 
@@ -43,7 +42,6 @@ app.use('/api/incidents', incidentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
-app.use('/api/guides', guideRoutes);
 
 // ── Route de santé ────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

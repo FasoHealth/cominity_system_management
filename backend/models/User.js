@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema(
         // ── Rôle et statut ───────────────────────────────────────────────────────
         role: {
             type: String,
-            enum: ['citizen', 'admin', 'police', 'moderator'],
+            enum: ['citizen', 'admin'],
             default: 'citizen',
         },
         isActive: {
@@ -58,13 +58,6 @@ const UserSchema = new mongoose.Schema(
         incidentsReported: {
             type: Number,
             default: 0,
-        },
-
-        // ── Push Notifications ───────────────────────────────────────────────────
-        fcmToken: {
-            type: String,
-            default: null,
-            select: false,
         },
 
         // ── Métadonnées ───────────────────────────────────────────────────────────
