@@ -7,6 +7,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 // ── Import des routes ─────────────────────────────────────────────────────────
@@ -19,16 +20,29 @@ const messageRoutes = require('./routes/messages');
 const app = express();
 
 // ── Middlewares globaux ───────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
+  `http://localhost:${PORT}`,
+  `http://127.0.0.1:${PORT}`,
   'http://localhost:5173',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
+// Autoriser toute origine localhost (n'importe quel port) pour Flutter web et autres clients en dev
+function corsOrigin(origin, callback) {
+  if (!origin) return callback(null, true);
+  if (allowedOrigins.includes(origin)) return callback(null, true);
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    return callback(null, true);
+  }
+  callback(null, false);
+}
+
 app.use(cors({
-  origin: allowedOrigins,
+  origin: corsOrigin,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -52,6 +66,16 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// ── Servir le frontend React (même port) ───────────────────────────────────────
+const frontendBuild = path.join(__dirname, '..', 'frontend', 'build');
+if (fs.existsSync(frontendBuild)) {
+  app.use(express.static(frontendBuild));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(frontendBuild, 'index.html'));
+  });
+}
 
 // ── Middleware de gestion des routes inconnues ────────────────────────────────
 app.use((req, res) => {
@@ -86,7 +110,6 @@ app.use((err, req, res, next) => {
 });
 
 // ── Connexion MongoDB puis démarrage du serveur ───────────────────────────────
-const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/community_security_alert';
 
 mongoose

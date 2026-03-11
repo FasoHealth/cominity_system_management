@@ -8,6 +8,7 @@ const router = express.Router();
 const Message = require('../models/Message');
 const Incident = require('../models/Incident');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 
 // ── GET /api/messages/:incidentId — Récupérer les messages d'un incident ──────

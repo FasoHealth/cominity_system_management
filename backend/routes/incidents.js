@@ -23,18 +23,8 @@ const storage = multer.diskStorage({
     },
 });
 
-const fileFilter = (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (allowed.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Format non autorisé. Utilisez jpg, png ou webp.'), false);
-    }
-};
-
 const upload = multer({
     storage,
-    fileFilter,
     limits: { fileSize: 5 * 1024 * 1024, files: 4 },
 });
 
@@ -58,7 +48,7 @@ router.get('/', async (req, res) => {
     try {
         const { category, severity, search, page = 1, limit = 12 } = req.query;
 
-        const filter = { status: 'approved' };
+        const filter = { status: { $in: ['approved', 'resolved'] } };
         if (category) filter.category = category;
         if (severity) filter.severity = severity;
         if (search) {
