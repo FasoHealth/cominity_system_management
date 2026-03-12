@@ -64,29 +64,6 @@ const protect = async (req, res, next) => {
 };
 
 /**
- * optionalAuth — Tente d'authentifier l'utilisateur via JWT s'il est présent.
- * Ne bloque pas l'accès si le token est absent ou invalide.
- */
-const optionalAuth = async (req, res, next) => {
-    let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
-        token = req.headers.authorization.split(' ')[1];
-    }
-
-    if (!token) return next();
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-        if (user && user.isActive) {
-            req.user = user;
-        }
-    } catch (err) {}
-    
-    next();
-};
-
-/**
  * adminOnly — Vérifie que l'utilisateur connecté est un administrateur.
  * Doit être utilisé APRÈS le middleware protect.
  */
@@ -111,4 +88,4 @@ const generateToken = (id) => {
     });
 };
 
-module.exports = { protect, adminOnly, generateToken, optionalAuth };
+module.exports = { protect, adminOnly, generateToken };
