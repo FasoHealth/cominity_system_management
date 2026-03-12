@@ -160,7 +160,12 @@ const ReportIncidentPage = () => {
                     </div>}
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
-                            <label className="form-label" htmlFor="title">Titre du signalement</label>
+                            <label className="form-label" htmlFor="title">
+                                Titre du signalement
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
+                                    (Min. 5 caractères)
+                                </span>
+                            </label>
                             <input className="form-control" type="text" id="title"
                                 placeholder="Ex: Incendie au marché central, Vol de moto..."
                                 value={form.title} onChange={e => set('title', e.target.value)} required minLength={5} maxLength={100} />
@@ -210,7 +215,7 @@ const ReportIncidentPage = () => {
                             <label className="form-label" htmlFor="description">
                                 Description détaillée
                                 <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
-                                    {form.description.length}/2000
+                                    (Min. 20) • {form.description.length}/2000
                                 </span>
                             </label>
                             <textarea className="form-control" id="description" rows={4}

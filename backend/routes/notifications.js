@@ -25,8 +25,8 @@ router.get('/', protect, async (req, res) => {
 
         res.json({ success: true, notifications, unreadCount });
     } catch (err) {
-        console.error('Erreur GET /notifications :', err.message);
-        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+        console.error('Erreur GET /notifications :', err);
+        res.status(500).json({ success: false, message: 'Erreur serveur.', stack: err.stack });
     }
 });
 

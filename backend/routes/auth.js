@@ -186,8 +186,7 @@ router.put(
     [
         body('name').optional().trim().isLength({ min: 2, max: 50 }).withMessage('Nom invalide.'),
         body('phone').optional().trim(),
-        body('location.address').optional().trim(),
-        body('location.city').optional().trim(),
+        body('location').optional()
     ],
     async (req, res) => {
         const validationError = handleValidationErrors(req, res);
@@ -200,7 +199,17 @@ router.put(
             const updates = {};
             if (name) updates.name = name;
             if (phone !== undefined) updates.phone = phone;
-            if (location) updates.location = location;
+            
+            // Allow storing only the coordinates part to preserve address/city if present
+            if (location && location.coordinates) {
+                updates['location.coordinates'] = location.coordinates;
+            }
+            if (location && location.address) {
+                updates['location.address'] = location.address;
+            }
+            if (location && location.city) {
+                updates['location.city'] = location.city;
+            }
 
             const updatedUser = await User.findByIdAndUpdate(
                 req.user._id,

@@ -34,6 +34,10 @@ const RegisterPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+        if (form.password.length < 8 || !/\d/.test(form.password)) {
+            setError('Le mot de passe doit contenir au moins 8 caractères et au moins un chiffre.');
+            return;
+        }
         if (form.password !== form.confirmPassword) {
             setError('Les mots de passe ne correspondent pas.');
             return;
@@ -128,7 +132,10 @@ const RegisterPage = () => {
                                     <span className="input-icon"><Lock size={18} opacity={0.5} /></span>
                                     <input className="form-control" type="password" id="password" name="password"
                                         placeholder="••••••••" value={form.password}
-                                        onChange={handleChange} required minLength={6} />
+                                        onChange={handleChange} required minLength={8} />
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
+                                    8 caractères min., dont 1 chiffre.
                                 </div>
                             </div>
                             <div className="form-group">

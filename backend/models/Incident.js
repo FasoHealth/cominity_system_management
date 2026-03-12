@@ -138,10 +138,16 @@ IncidentSchema.virtual('upvoteCount').get(function () {
 
 // Virtuals pour compatibilité frontend (lat/lng)
 IncidentSchema.virtual('lat').get(function () {
-    return this.location.coordinates.coordinates[1];
+    if (this.location && this.location.coordinates && Array.isArray(this.location.coordinates.coordinates)) {
+        return this.location.coordinates.coordinates[1];
+    }
+    return null;
 });
 IncidentSchema.virtual('lng').get(function () {
-    return this.location.coordinates.coordinates[0];
+    if (this.location && this.location.coordinates && Array.isArray(this.location.coordinates.coordinates)) {
+        return this.location.coordinates.coordinates[0];
+    }
+    return null;
 });
 
 // ── Index pour les recherches fréquentes ─────────────────────────────────────

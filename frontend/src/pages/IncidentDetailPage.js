@@ -177,8 +177,9 @@ const IncidentDetailPage = () => {
                             <button 
                                 className={`btn ${hasVoted ? 'btn-secondary' : 'btn-primary'}`}
                                 onClick={handleUpvote}
-                                disabled={loadingUpvote || (incident.status !== 'approved' && incident.status !== 'pending')}
-                                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px' }}
+                                disabled={loadingUpvote || (incident.status !== 'pending') || (user?.role === 'admin')}
+                                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', opacity: (user?.role === 'admin' || incident.status !== 'pending') ? 0.6 : 1, cursor: (user?.role === 'admin' || incident.status !== 'pending') ? 'not-allowed' : 'pointer' }}
+                                title={user?.role === 'admin' ? "Les administrateurs ne peuvent pas voter" : incident.status !== 'pending' ? "L'incident n'est plus en attente" : ""}
                             >
                                 <ThumbsUp size={18} fill={hasVoted ? 'currentColor' : 'none'} />
                                 {hasVoted ? 'Confirmé' : 'Confirmer l\'incident'}
