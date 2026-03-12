@@ -21,29 +21,37 @@ const app = express();
 
 // ── Middlewares globaux ───────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
-const allowedOrigins = [
-  `http://localhost:${PORT}`,
-  `http://127.0.0.1:${PORT}`,
-  'http://localhost:5173',
-  process.env.CLIENT_URL
-].filter(Boolean);
 
-// Autoriser toute origine localhost (n'importe quel port) pour Flutter web et autres clients en dev
-function corsOrigin(origin, callback) {
-  if (!origin) return callback(null, true);
-  if (allowedOrigins.includes(origin)) return callback(null, true);
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-    return callback(null, true);
-  }
-  callback(null, false);
-}
+// Configuration CORS plus flexible pour la production et le développement
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      process.env.CLIENT_URL,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:3000'
+    ].filter(Boolean);
 
-app.use(cors({
-  origin: corsOrigin,
+    // Autoriser les requêtes sans origine (comme les apps mobiles ou Postman)
+    if (!origin) return callback(null, true);
+
+    // Vérifier si l'origine est dans la liste ou est un localhost (pour le dev)
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    const isNetlify = origin.endsWith('.netlify.app');
+
+    if (allowedOrigins.indexOf(origin) !== -1 || isLocalhost || isNetlify) {
+      callback(null, true);
+    } else {
+      console.log('CORS bloqué pour l\'origine :', origin);
+      callback(null, false);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
