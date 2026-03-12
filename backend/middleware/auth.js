@@ -78,6 +78,30 @@ const adminOnly = (req, res, next) => {
 };
 
 /**
+ * optionalAuth — Vérifie si un token est présent.
+ * Si oui, attache l'utilisateur à req.user. Sinon, continue simplement.
+ */
+const optionalAuth = async (req, res, next) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const user = await User.findById(decoded.id);
+            if (user && user.isActive) {
+                req.user = user;
+            }
+        } catch (err) {
+            // Ignorer les erreurs
+        }
+    }
+    next();
+};
+
+/**
  * generateToken — Génère un token JWT pour un utilisateur donné.
  * @param {string} id - L'identifiant MongoDB de l'utilisateur
  * @returns {string} Token JWT signé
@@ -88,4 +112,4 @@ const generateToken = (id) => {
     });
 };
 
-module.exports = { protect, adminOnly, generateToken };
+module.exports = { protect, adminOnly, generateToken, optionalAuth };
