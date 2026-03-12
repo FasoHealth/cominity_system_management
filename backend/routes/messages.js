@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const Message = require('../models/Message');
 const Incident = require('../models/Incident');
+const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { protect } = require('../middleware/auth');
 

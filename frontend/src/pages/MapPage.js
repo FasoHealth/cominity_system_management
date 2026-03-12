@@ -5,19 +5,50 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import L from 'leaflet';
+import { 
+    Map as MapIcon, 
+    MapPin, 
+    Clock, 
+    Search, 
+    Navigation, 
+    ThumbsUp, 
+    Zap, 
+    Target, 
+    Plus, 
+    Minus, 
+    AlertCircle,
+    ShieldAlert,
+    AlertTriangle,
+    Flame,
+    Car,
+    Hammer,
+    Eye,
+    LocateFixed,
+    ChevronRight
+} from 'lucide-react';
 
-const CAT_LABELS = { theft: 'Vol', assault: 'Agression', vandalism: 'Vandalisme', suspicious_activity: 'Suspect', fire: 'Incendie', accident: 'Accident', other: 'Autre' };
-const CAT_ICONS = { theft: '💰', assault: '👊', vandalism: '🔨', suspicious_activity: '👁️', fire: '🔥', accident: '🚗', other: '⚠️' };
+const CAT_LABELS = { theft: 'Vol', assault: 'Agression', vandalism: 'Vandalisme', suspicious_activity: 'Suspect', fire: 'Incendie', kidnapping: 'Enlèvement', other: 'Autre' };
+
+const CATEGORY_ICONS = {
+    theft: ShieldAlert,
+    assault: ShieldAlert,
+    vandalism: Hammer,
+    suspicious_activity: Eye,
+    fire: Flame,
+    kidnapping: ShieldAlert,
+    other: AlertTriangle
+};
+
 const SEV_COLORS = { low: '#22C55E', medium: '#EAB308', high: '#F97316', critical: '#EF4444' };
 const SEV_LABELS = { low: 'Faible', medium: 'Moyen', high: 'Élevé', critical: 'Critique' };
 
 const CAT_PILLS = [
     { value: '', label: 'Tout' },
+    { value: 'theft', label: 'Vol' },
     { value: 'assault', label: 'Sécurité' },
-    { value: 'accident', label: 'Accident' },
     { value: 'fire', label: 'Incendie' },
-    { value: 'vandalism', label: 'Travaux' },
-    { value: 'other', label: 'Météo' },
+    { value: 'vandalism', label: 'Vandalisme' },
+    { value: 'kidnapping', label: 'Enlèvement' },
 ];
 
 function timeAgo(date) {
@@ -40,10 +71,13 @@ function formatDist(km) {
     return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
 }
 
-const createMarker = (color, icon) => L.divIcon({
+// Fixed SVG icon helper for Leaflet markers to avoid complex React rendering inside L.divIcon
+const createMarker = (color) => L.divIcon({
     className: '',
-    html: `<div style="width:38px;height:38px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 2px 10px ${color}99;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;">${icon}</div>`,
-    iconSize: [38, 38], iconAnchor: [19, 19], popupAnchor: [0, -22],
+    html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 10px ${color}99;display:flex;align-items:center;justify-content:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+           </div>`,
+    iconSize: [24, 24], iconAnchor: [12, 12], popupAnchor: [0, -12],
 });
 
 const FlyTo = ({ pos }) => { const map = useMap(); useEffect(() => { if (pos) map.flyTo(pos, 15, { duration: 0.8 }); }, [pos]); return null; };
@@ -58,15 +92,30 @@ const MapPage = () => {
     const [activeId, setActiveId] = useState(null);
     const [flyTo, setFlyTo] = useState(null);
     const [radiusKm, setRadiusKm] = useState(2.5);
-    const [center] = useState([12.3647, -1.5338]); // Ouagadougou default
+    const [center, setCenter] = useState([12.3647, -1.5338]); // Default Ouaga
+    const [userPos, setUserPos] = useState(null);
 
     const mapTile = theme === 'dark'
         ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
     useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                ({ coords }) => {
+                    const pos = [coords.latitude, coords.longitude];
+                    setCenter(pos);
+                    setUserPos(pos);
+                    setFlyTo(pos);
+                },
+                () => console.warn("Geolocation refusée.")
+            );
+        }
+
         axios.get('/api/incidents?limit=500').then(({ data }) => {
-            if (data.success) setIncidents(data.incidents);
+            if (data.success) {
+                setIncidents(data.incidents.filter(i => i.status === 'approved'));
+            }
         }).catch(console.error).finally(() => setLoading(false));
     }, []);
 
@@ -78,23 +127,24 @@ const MapPage = () => {
         return matchCat && matchSearch;
     });
 
-    // Sort by distance from center
     const withDist = filtered.map(inc => {
-        const dist = inc.location?.coordinates?.lat
-            ? haversineKm(center[0], center[1], inc.location.coordinates.lat, inc.location.coordinates.lng)
+        const coords = inc.location?.coordinates?.coordinates;
+        const dist = (coords && coords.length === 2)
+            ? haversineKm(center[0], center[1], coords[1], coords[0])
             : 999;
         return { ...inc, dist };
     }).sort((a, b) => a.dist - b.dist);
 
     const handleItemClick = (inc) => {
         setActiveId(inc._id);
-        if (inc.location?.coordinates?.lat) setFlyTo([inc.location.coordinates.lat, inc.location.coordinates.lng]);
+        const coords = inc.location?.coordinates?.coordinates;
+        if (coords && coords.length === 2) setFlyTo([coords[1], coords[0]]);
     };
 
     if (loading) return (
         <div className="page-loader" style={{ height: '100vh' }}>
             <div className="spinner" />
-            <p style={{ color: 'var(--text-secondary)' }}>Chargement de la carte...</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Chargement de la carte interactive...</p>
         </div>
     );
 
@@ -105,7 +155,9 @@ const MapPage = () => {
                 {/* Header */}
                 <div className="map-sidebar-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                        <div className="map-sidebar-title">Dans votre zone</div>
+                        <div className="map-sidebar-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <LocateFixed size={18} color="var(--brand-orange)" /> Dans votre zone
+                        </div>
                         <span style={{ background: 'var(--brand-orange)', color: '#fff', fontSize: '0.7rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20 }}>
                             {withDist.length} alertes
                         </span>
@@ -146,53 +198,73 @@ const MapPage = () => {
                 <div className="map-sidebar-list">
                     {withDist.length === 0 ? (
                         <div className="empty-state" style={{ padding: '32px 16px' }}>
-                            <div className="empty-state-icon">🛡️</div>
-                            <p className="empty-state-title" style={{ fontSize: '0.9rem' }}>Aucun incident</p>
-                        </div>
-                    ) : withDist.map(inc => (
-                        <div key={inc._id}
-                            className={`map-incident-item${activeId === inc._id ? ' active' : ''}`}
-                            onClick={() => handleItemClick(inc)}>
-                            <div className={`cat-icon ${inc.category}`} style={{ width: 38, height: 38, fontSize: '1rem', flexShrink: 0 }}>
-                                {CAT_ICONS[inc.category] || '⚠️'}
+                            <div className="empty-state-icon">
+                                <AlertCircle size={40} opacity={0.2} />
                             </div>
-                            <div className="map-incident-info">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
-                                    <span className="map-incident-name">{inc.title}</span>
-                                    <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                                        {timeAgo(inc.createdAt)}
-                                    </span>
+                            <p className="empty-state-title" style={{ fontSize: '0.9rem' }}>Aucun incident trouvé</p>
+                        </div>
+                    ) : withDist.map(inc => {
+                        const Icon = CATEGORY_ICONS[inc.category] || AlertTriangle;
+                        return (
+                            <div key={inc._id}
+                                className={`map-incident-item${activeId === inc._id ? ' active' : ''}`}
+                                onClick={() => handleItemClick(inc)}>
+                                <div className={`cat-icon ${inc.category}`} style={{ width: 38, height: 38, fontSize: '1rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: 'var(--bg-secondary)' }}>
+                                    <Icon size={18} />
                                 </div>
-                                <div className="map-incident-addr">{inc.location?.address}</div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        ✈️ {inc.dist < 999 ? formatDist(inc.dist) : '—'}
-                                    </span>
-                                    {inc.upvoteCount > 0 && (
-                                        <span style={{ fontSize: '0.72rem', color: 'var(--brand-orange)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
-                                            👍 {inc.upvoteCount}
+                                <div className="map-incident-info">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
+                                        <span className="map-incident-name">{inc.title}</span>
+                                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                            <Clock size={10} /> {timeAgo(inc.createdAt)}
                                         </span>
-                                    )}
+                                    </div>
+                                    <div className="map-incident-addr" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <MapPin size={10} opacity={0.6} /> {inc.location?.address}
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                            <Navigation size={10} /> {inc.dist < 999 ? formatDist(inc.dist) : '—'}
+                                        </span>
+                                        {inc.upvoteCount > 0 && (
+                                            <span style={{ fontSize: '0.72rem', color: 'var(--brand-orange)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
+                                                <ThumbsUp size={10} /> {inc.upvoteCount}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
             {/* ── Map ── */}
             <div className="map-container">
                 {/* Search bar */}
-                <div className="map-search-bar">
-                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1, pointerEvents: 'none' }}>🔍</span>
+                <div className="map-search-bar" style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 10 }}>
+                        <Search size={18} />
+                    </span>
                     <input placeholder="Rechercher un quartier, une rue..."
                         value={searchVal} onChange={e => setSearchVal(e.target.value)}
-                        style={{ width: '100%', paddingLeft: 36 }} />
+                        style={{ width: '100%', paddingLeft: 44, borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-primary)', height: 48, boxShadow: 'var(--shadow-sm)' }} />
                 </div>
 
-                <MapContainer key={theme} center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
+                <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false}>
                     <TileLayer url={mapTile} attribution="&copy; CARTO" />
                     {flyTo && <FlyTo pos={flyTo} />}
+
+                    {/* User position marker */}
+                    {userPos && (
+                        <Marker position={userPos} icon={L.divIcon({
+                            className: '',
+                            html: '<div style="width:20px;height:20px;background:#3B82F6;border:3px solid #fff;border-radius:50%;box-shadow:0 0 10px rgba(59,130,246,0.6);"></div>',
+                            iconSize: [20, 20], iconAnchor: [10, 10]
+                        })}>
+                            <Popup>Vous êtes ici</Popup>
+                        </Marker>
+                    )}
 
                     {/* Proximity circle */}
                     <Circle
@@ -202,63 +274,73 @@ const MapPage = () => {
                     />
 
                     {/* Markers */}
-                    {withDist.filter(inc => inc.location?.coordinates?.lat).map(inc => (
+                    {withDist.filter(inc => inc.location?.coordinates?.coordinates).map(inc => {
+                        const coords = inc.location.coordinates.coordinates;
+                        return (
                         <Marker
                             key={inc._id}
-                            position={[inc.location.coordinates.lat, inc.location.coordinates.lng]}
-                            icon={createMarker(SEV_COLORS[inc.severity], CAT_ICONS[inc.category] || '⚠️')}
+                            position={[coords[1], coords[0]]}
+                            icon={createMarker(SEV_COLORS[inc.severity])}
                             eventHandlers={{ click: () => setActiveId(inc._id) }}
                         >
                             <Popup>
-                                <div style={{ minWidth: 200, padding: 4 }}>
+                                <div style={{ minWidth: 220, padding: 4 }}>
                                     <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                                         <span className={`badge badge-${inc.category}`} style={{ fontSize: '0.65rem' }}>{CAT_LABELS[inc.category]}</span>
                                         <span className={`badge badge-${inc.severity}`} style={{ fontSize: '0.65rem' }}>{SEV_LABELS[inc.severity]}</span>
-                                        {inc.upvoteCount > 0 && <span style={{ fontSize: '0.65rem', color: 'var(--brand-orange)', fontWeight: 700 }}>👍 {inc.upvoteCount}</span>}
+                                        {inc.upvoteCount > 0 && <span style={{ fontSize: '0.65rem', color: 'var(--brand-orange)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><ThumbsUp size={10} /> {inc.upvoteCount}</span>}
                                     </div>
-                                    <h4 style={{ margin: '0 0 6px', fontSize: '0.9rem', fontWeight: 700 }}>{inc.title}</h4>
-                                    <p style={{ margin: '0 0 10px', fontSize: '0.78rem', color: '#6B7280' }}>📍 {inc.location.address}</p>
-                                    <button className="btn btn-primary btn-sm btn-full" onClick={() => navigate(`/incidents/${inc._id}`)}>
-                                        Voir les détails →
+                                    <h4 style={{ margin: '0 0 6px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{inc.title}</h4>
+                                    <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <MapPin size={10} /> {inc.location.address}
+                                    </p>
+                                    <button className="btn btn-primary btn-sm btn-full" style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }} onClick={() => navigate(`/incidents/${inc._id}`)}>
+                                        Détails <ChevronRight size={14} />
                                     </button>
                                 </div>
                             </Popup>
                         </Marker>
-                    ))}
+                        );
+                    })}
                 </MapContainer>
 
                 {/* Floating CTA */}
-                <div style={{ position: 'absolute', bottom: 24, right: 20, zIndex: 400 }}>
+                <div style={{ position: 'absolute', bottom: 32, right: 32, zIndex: 400 }}>
                     <Link to="/report" className="btn btn-primary btn-lg" style={{
-                        borderRadius: 40, padding: '14px 28px', gap: 10,
-                        boxShadow: '0 8px 24px rgba(232,84,26,0.45)',
-                        fontSize: '0.875rem', fontWeight: 700, letterSpacing: '0.03em'
+                        borderRadius: 40, padding: '16px 32px', gap: 12,
+                        boxShadow: '0 8px 32px rgba(232,84,26,0.45)',
+                        fontSize: '0.9rem', fontWeight: 800, letterSpacing: '0.04em',
+                        display: 'flex', alignItems: 'center'
                     }}>
-                        ⚡ SIGNALER UN INCIDENT
+                        <Zap size={20} fill="currentColor" /> SIGNALER UN INCIDENT
                     </Link>
                 </div>
 
-                {/* Zoom controls */}
-                <div style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', zIndex: 400, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {['📍', '+', '−'].map((icon, i) => (
-                        <div key={i} style={{
-                            width: 40, height: 40, background: '#fff', borderRadius: '50%',
+                {/* Map Controls */}
+                <div style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', zIndex: 400, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {[
+                        { icon: <Target size={20} />, action: () => setFlyTo(userPos) },
+                        { icon: <Plus size={20} />, action: () => {} }, // Logic would need map ref
+                        { icon: <Minus size={20} />, action: () => {} }
+                    ].map((btn, i) => (
+                        <div key={i} onClick={btn.action} style={{
+                            width: 44, height: 44, background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '50%',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)', cursor: 'pointer', fontSize: i === 0 ? '1rem' : '1.2rem',
-                            color: 'var(--text-secondary)', fontWeight: 600
-                        }}>
-                            {icon}
+                            boxShadow: 'var(--shadow-md)', cursor: 'pointer',
+                            color: 'var(--text-primary)', transition: 'all 0.2s'
+                        }} onMouseOver={e => e.currentTarget.style.color = 'var(--brand-orange)'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-primary)'}>
+                            {btn.icon}
                         </div>
                     ))}
                 </div>
 
                 {/* Legend */}
-                <div className="map-legend">
-                    <div className="map-legend-title">Légende</div>
-                    <div className="map-legend-items">
+                <div className="map-legend" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: 12, padding: 12, boxShadow: 'var(--shadow-md)' }}>
+                    <div className="map-legend-title" style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: 8, color: 'var(--text-muted)' }}>Gravité</div>
+                    <div className="map-legend-items" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                         {Object.entries(SEV_COLORS).map(([sev, color]) => (
-                            <div key={sev} className="map-legend-item">
-                                <div className="map-legend-dot" style={{ background: color }} /> {SEV_LABELS[sev]}
+                            <div key={sev} className="map-legend-item" style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600 }}>
+                                <div className="map-legend-dot" style={{ width: 8, height: 8, borderRadius: '50%', background: color }} /> {SEV_LABELS[sev]}
                             </div>
                         ))}
                     </div>

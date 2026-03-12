@@ -8,6 +8,28 @@ const router = express.Router();
 const User = require('../models/User');
 const Incident = require('../models/Incident');
 const { protect, adminOnly } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+
+// ── Configuration Multer pour les avatars ─────────────────────────────────────
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'uploads/avatars/'),
+    filename: (req, file, cb) => {
+        const uniqueName = `avatar-${uuidv4()}${path.extname(file.originalname).toLowerCase()}`;
+        cb(null, uniqueName);
+    },
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2 Mo max pour un avatar
+    fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (allowed.includes(file.mimetype)) cb(null, true);
+        else cb(new Error('Format non autorisé. Utilisez jpg, png ou webp.'));
+    }
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/users — Liste tous les utilisateurs (admin uniquement)
@@ -122,12 +144,9 @@ router.put('/:id/toggle', protect, adminOnly, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Utilisateur introuvable.' });
         }
 
-        // Empêcher la désactivation d'un autre admin
-        if (user.role === 'admin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Impossible de modifier le statut d\'un administrateur.',
-            });
+        // Empêcher de se désactiver soi-même
+        if (user._id.toString() === req.user._id.toString()) {
+            return res.status(400).json({ success: false, message: 'Vous ne pouvez pas désactiver votre propre compte.' });
         }
 
         user.isActive = !user.isActive;
@@ -135,15 +154,64 @@ router.put('/:id/toggle', protect, adminOnly, async (req, res) => {
 
         res.json({
             success: true,
-            message: `Compte ${user.isActive ? 'activé' : 'désactivé'} avec succès.`,
-            user: { _id: user._id, name: user.name, email: user.email, isActive: user.isActive },
+            message: `Compte ${user.isActive ? 'réactivé' : 'désactivé'} avec succès.`,
+            user: { _id: user._id, isActive: user.isActive }
         });
     } catch (err) {
-        console.error('Erreur PUT /users/:id/toggle :', err.message);
-        if (err.kind === 'ObjectId') {
+        console.error('Erreur toggle user :', err.message);
+        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/users/profile — Mettre à jour son propre profil
+// ─────────────────────────────────────────────────────────────────────────────
+router.put('/profile', protect, upload.single('avatar'), async (req, res) => {
+    try {
+        const { name, phone, city } = req.body;
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
             return res.status(404).json({ success: false, message: 'Utilisateur introuvable.' });
         }
-        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+
+        if (name) user.name = name;
+        if (phone !== undefined) user.phone = phone;
+        if (city !== undefined) {
+            if (!user.location) user.location = {};
+            user.location.city = city;
+        }
+
+        const { lat, lng } = req.body;
+        if (lat && lng) {
+            user.location.coordinates = {
+                type: 'Point',
+                coordinates: [parseFloat(lng), parseFloat(lat)]
+            };
+        }
+
+        if (req.file) {
+            user.avatar = `/uploads/avatars/${req.file.filename}`;
+        }
+
+        await user.save({ validateBeforeSave: false });
+
+        res.json({
+            success: true,
+            message: 'Profil mis à jour avec succès.',
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                location: user.location,
+                avatar: user.avatar,
+                role: user.role
+            },
+        });
+    } catch (err) {
+        console.error('Erreur PUT /api/users/profile :', err.message);
+        res.status(500).json({ success: false, message: 'Erreur serveur lors de la mise à jour.' });
     }
 });
 

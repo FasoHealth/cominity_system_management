@@ -2,17 +2,46 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { 
+    Folder, 
+    Zap, 
+    Clock, 
+    CheckCircle2, 
+    Trophy, 
+    XCircle, 
+    MapPin, 
+    Edit3, 
+    ChevronRight,
+    Search,
+    Flame,
+    Car,
+    Hammer,
+    Eye,
+    ShieldAlert,
+    AlertTriangle
+} from 'lucide-react';
 
-const CAT_LABELS = { theft: 'Vol', assault: 'Agression', vandalism: 'Vandalisme', suspicious_activity: 'Suspect', fire: 'Incendie', accident: 'Accident', other: 'Autre' };
-const CAT_ICONS = { theft: '💰', assault: '👊', vandalism: '🔨', suspicious_activity: '👁️', fire: '🔥', accident: '🚗', other: '⚠️' };
+const CAT_LABELS = { theft: 'Vol', assault: 'Agression', vandalism: 'Vandalisme', suspicious_activity: 'Suspect', fire: 'Incendie', kidnapping: 'Enlèvement', other: 'Autre' };
+
+const CATEGORY_ICONS = {
+    theft: ShieldAlert,
+    assault: ShieldAlert,
+    vandalism: Hammer,
+    suspicious_activity: Eye,
+    fire: Flame,
+    kidnapping: ShieldAlert,
+    other: AlertTriangle
+};
+
 const SEV_LABELS = { low: 'Faible', medium: 'Moyen', high: 'Élevé', critical: 'Critique' };
 const STATUS_LABELS = { pending: 'En attente', approved: 'Approuvé', resolved: 'Résolu', rejected: 'Rejeté' };
+
 const STATUS_FILTERS = [
-    { value: '', label: 'Tous' },
-    { value: 'pending', label: '⏳ En attente' },
-    { value: 'approved', label: '✅ Approuvés' },
-    { value: 'resolved', label: '🏆 Résolus' },
-    { value: 'rejected', label: '❌ Rejetés' },
+    { value: '', label: 'Tous', icon: null },
+    { value: 'pending', label: 'En attente', icon: <Clock size={14} /> },
+    { value: 'approved', label: 'Approuvés', icon: <CheckCircle2 size={14} /> },
+    { value: 'resolved', label: 'Résolus', icon: <Trophy size={14} /> },
+    { value: 'rejected', label: 'Rejetés', icon: <XCircle size={14} /> },
 ];
 
 function timeAgo(date) {
@@ -43,10 +72,14 @@ const MyIncidentsPage = () => {
             {/* Header */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                    <h1 className="page-title">📂 Mes Signalements</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <Folder size={28} color="var(--brand-orange)" /> Mes Signalements
+                    </h1>
                     <p className="page-subtitle">Suivez le statut de toutes vos alertes envoyées.</p>
                 </div>
-                <Link to="/report" className="btn btn-primary">⚡ Nouveau signalement</Link>
+                <Link to="/report" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Zap size={18} /> Nouveau signalement
+                </Link>
             </div>
 
             {/* Summary mini-cards */}
@@ -60,21 +93,23 @@ const MyIncidentsPage = () => {
                     ].map(s => (
                         <div key={s.label} style={{
                             background: s.bg, border: `1px solid ${s.color}33`,
-                            borderRadius: 10, padding: '10px 20px', display: 'flex', gap: 10, alignItems: 'center'
+                            borderRadius: 12, padding: '10px 20px', display: 'flex', gap: 12, alignItems: 'center',
+                            minWidth: 140
                         }}>
-                            <span style={{ fontSize: '1.3rem', fontWeight: 800, color: s.color }}>{s.value}</span>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{s.label}</span>
+                            <span style={{ fontSize: '1.4rem', fontWeight: 800, color: s.color }}>{s.value}</span>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{s.label}</span>
                         </div>
                     ))}
                 </div>
             )}
 
             {/* Status filter pills */}
-            <div className="pill-filter" style={{ marginBottom: 20 }}>
+            <div className="pill-filter" style={{ marginBottom: 24 }}>
                 {STATUS_FILTERS.map(f => (
                     <button key={f.value} className={`pill${statusFilter === f.value ? ' active' : ''}`}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8 }}
                         onClick={() => setStatusFilter(f.value)}>
-                        {f.label}
+                        {f.icon} {f.label}
                     </button>
                 ))}
             </div>
@@ -96,44 +131,62 @@ const MyIncidentsPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filtered.map(inc => (
-                                    <tr key={inc._id} onClick={() => window.location.href = `/incidents/${inc._id}`}>
-                                        <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                <span style={{ fontSize: '1.1rem' }}>{CAT_ICONS[inc.category] || '⚠️'}</span>
-                                                <div>
-                                                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{inc.title}</div>
-                                                    <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                        {inc.description}
+                                {filtered.map(inc => {
+                                    const Icon = CATEGORY_ICONS[inc.category] || AlertTriangle;
+                                    return (
+                                        <tr key={inc._id} onClick={() => window.location.href = `/incidents/${inc._id}`}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                    <div className={`cat-icon-mini ${inc.category}`} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)', flexShrink: 0 }}>
+                                                        <Icon size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{inc.title}</div>
+                                                        <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                            {inc.description}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                                                <span className={`badge badge-${inc.category}`}>{CAT_LABELS[inc.category]}</span>
-                                                <span className={`badge badge-${inc.severity}`}>{SEV_LABELS[inc.severity]}</span>
-                                            </div>
-                                        </td>
-                                        <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            📍 {inc.location?.address}
-                                        </td>
-                                        <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                                            {timeAgo(inc.createdAt)}
-                                        </td>
-                                        <td><span className={`badge badge-${inc.status}`}>{STATUS_LABELS[inc.status] || inc.status}</span></td>
-                                        <td onClick={e => e.stopPropagation()}>
-                                            <Link to={`/incidents/${inc._id}`} className="btn btn-sm btn-ghost">Détails →</Link>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                                    <span className={`badge badge-${inc.category}`}>{CAT_LABELS[inc.category]}</span>
+                                                    <span className={`badge badge-${inc.severity}`}>{SEV_LABELS[inc.severity]}</span>
+                                                </div>
+                                            </td>
+                                            <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    <MapPin size={14} opacity={0.6} /> {inc.location?.address}
+                                                </div>
+                                            </td>
+                                            <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    <Clock size={14} opacity={0.6} /> {timeAgo(inc.createdAt)}
+                                                </div>
+                                            </td>
+                                            <td><span className={`badge badge-${inc.status}`}>{STATUS_LABELS[inc.status] || inc.status}</span></td>
+                                            <td onClick={e => e.stopPropagation()}>
+                                                <div style={{ display: 'flex', gap: 6 }}>
+                                                    <Link to={`/incidents/${inc._id}`} className="btn btn-sm btn-ghost">Détails</Link>
+                                                    {inc.status === 'pending' && (
+                                                        <Link to={`/incidents/edit/${inc._id}`} className="btn btn-sm btn-secondary" style={{ padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                            <Edit3 size={14} /> Modif
+                                                        </Link>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
                 </div>
             ) : (
                 <div className="card empty-state">
-                    <div className="empty-state-icon">📂</div>
+                    <div className="empty-state-icon">
+                        <Folder size={48} opacity={0.2} />
+                    </div>
                     <p className="empty-state-title">
                         {statusFilter ? 'Aucun signalement dans cette catégorie' : 'Aucun signalement envoyé'}
                     </p>
@@ -141,8 +194,8 @@ const MyIncidentsPage = () => {
                         {statusFilter ? 'Essayez un autre filtre.' : "Vous n'avez pas encore signalé d'incident."}
                     </p>
                     {!statusFilter && (
-                        <Link to="/report" className="btn btn-primary" style={{ marginTop: 16 }}>
-                            ⚡ Signaler maintenant
+                        <Link to="/report" className="btn btn-primary" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Zap size={18} /> Signaler maintenant
                         </Link>
                     )}
                 </div>

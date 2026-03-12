@@ -43,7 +43,7 @@
   --cat-vandalism: #F59E0B;
   --cat-suspicious: #6366F1;
   --cat-fire: #E8541A;
-  --cat-accident: #F97316;
+  --cat-kidnapping: #F97316;
   --cat-other: #6B7280;
 
   /* Layout */
@@ -881,7 +881,7 @@ textarea.form-control {
   background: rgba(232, 84, 26, 0.15);
 }
 
-.cat-icon.accident {
+.cat-icon.kidnapping {
   background: rgba(249, 115, 22, 0.15);
 }
 

@@ -26,7 +26,7 @@ const IncidentSchema = new mongoose.Schema(
             type: String,
             required: [true, 'La catégorie est obligatoire'],
             enum: {
-                values: ['theft', 'assault', 'vandalism', 'suspicious_activity', 'fire', 'accident', 'other'],
+                values: ['theft', 'assault', 'vandalism', 'suspicious_activity', 'fire', 'kidnapping', 'other'],
                 message: 'Catégorie invalide',
             },
         },
@@ -78,8 +78,16 @@ const IncidentSchema = new mongoose.Schema(
                 default: null,
             },
             coordinates: {
-                lat: { type: Number, default: null },
-                lng: { type: Number, default: null },
+                type: {
+                    type: String,
+                    enum: ['Point'],
+                    default: 'Point'
+                },
+                // [longitude, latitude]
+                coordinates: {
+                    type: [Number],
+                    default: [0, 0]
+                }
             },
         },
 
@@ -120,13 +128,20 @@ const IncidentSchema = new mongoose.Schema(
     {
         timestamps: true,
         toJSON: { virtuals: true },
-        toObject: { virtuals: true },
     }
 );
 
-// ── Champ virtuel : nombre de votes ──────────────────────────────────────────
+// ── Champs virtuels ──────────────────────────────────────────────────────────
 IncidentSchema.virtual('upvoteCount').get(function () {
     return this.upvotes ? this.upvotes.length : 0;
+});
+
+// Virtuals pour compatibilité frontend (lat/lng)
+IncidentSchema.virtual('lat').get(function () {
+    return this.location.coordinates.coordinates[1];
+});
+IncidentSchema.virtual('lng').get(function () {
+    return this.location.coordinates.coordinates[0];
 });
 
 // ── Index pour les recherches fréquentes ─────────────────────────────────────
@@ -143,48 +158,9 @@ IncidentSchema.on('index', function(error) {
     }
 });
 
-IncidentSchema.index({ 'location.coordinates': '2dsphere' });
-
-// ── Fonctionnalité 2 : Validation automatique par seuil (Pre-save hook) ──────
+// ── Validation automatique retirée au profit du seuil de 5 votes ──
 IncidentSchema.pre('save', async function (next) {
-    try {
-        if (this.isNew && this.status === 'pending' && this.location.coordinates.lat && this.location.coordinates.lng) {
-            const seuil = parseInt(process.env.AUTO_APPROVE_THRESHOLD) || 3;
-            const rayon = parseInt(process.env.AUTO_APPROVE_RADIUS_METERS) || 500;
-            const delaiMinutes = parseInt(process.env.AUTO_APPROVE_TIME_MINUTES) || 15;
-
-            const dateLimite = new Date();
-            dateLimite.setMinutes(dateLimite.getMinutes() - delaiMinutes);
-
-            const autresSignalements = await this.constructor.find({
-                category: this.category,
-                status: { $in: ['pending', 'approved'] },
-                createdAt: { $gte: dateLimite },
-                location: {
-                    $near: {
-                        $geometry: {
-                            type: 'Point',
-                            coordinates: [this.location.coordinates.lng, this.location.coordinates.lat]
-                        },
-                        $maxDistance: rayon
-                    }
-                }
-            });
-
-            // Isoler les citoyens uniques
-            const citoyensUniques = new Set(autresSignalements.map(s => s.reportedBy.toString()));
-
-            // Seuil atteint (on compte les autres + le courant = 3 donc les autres >= 2)
-            if (citoyensUniques.size >= (seuil - 1)) {
-                this.status = 'approved';
-                this.moderationNote = `Auto-approbation réseau : Correspond à ${seuil} ou plus signalements dans un rayon de ${rayon}m en moins de ${delaiMinutes}min.`;
-            }
-        }
-        next();
-    } catch (error) {
-        console.error('Erreur auto-validation:', error);
-        next(error);
-    }
+    next();
 });
 
 // ── Fonctionnalité 1 : Notification Police (Post-save hook) ──────────────────

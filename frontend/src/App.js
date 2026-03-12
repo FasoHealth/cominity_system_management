@@ -15,12 +15,16 @@ import MyIncidentsPage from './pages/MyIncidentsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import MapPage from './pages/MapPage';
 import ProfilePage from './pages/ProfilePage';
+import SupportAppealPage from './pages/SupportAppealPage';
+import EditIncidentPage from './pages/EditIncidentPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminIncidentsPage from './pages/admin/AdminIncidentsPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminGuidesPage from './pages/admin/AdminGuidesPage';
+import AdminAppealsPage from './pages/admin/AdminAppealsPage';
 
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -37,6 +41,9 @@ const AppRoutes = () => (
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/support-appeal" element={<SupportAppealPage />} />
         <Route path="/" element={<Navigate to="/feed" replace />} />
 
         {/* Protected (sidebar layout) */}
@@ -46,6 +53,7 @@ const AppRoutes = () => (
             <Route path="map" element={<MapPage />} />
             <Route path="report" element={<ReportIncidentPage />} />
             <Route path="incidents/:id" element={<IncidentDetailPage />} />
+            <Route path="incidents/edit/:id" element={<EditIncidentPage />} />
             <Route path="my-incidents" element={<MyIncidentsPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="profile" element={<ProfilePage />} />
@@ -54,7 +62,7 @@ const AppRoutes = () => (
             <Route path="admin" element={<ProtectedRoute adminOnly><AdminDashboardPage /></ProtectedRoute>} />
             <Route path="admin/incidents" element={<ProtectedRoute adminOnly><AdminIncidentsPage /></ProtectedRoute>} />
             <Route path="admin/users" element={<ProtectedRoute adminOnly><AdminUsersPage /></ProtectedRoute>} />
-            <Route path="admin/guides" element={<ProtectedRoute adminOnly><AdminGuidesPage /></ProtectedRoute>} />
+            <Route path="admin/appeals" element={<ProtectedRoute adminOnly><AdminAppealsPage /></ProtectedRoute>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/feed" replace />} />

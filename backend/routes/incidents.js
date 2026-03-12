@@ -56,9 +56,15 @@ const handleValidation = (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
     try {
-        const { category, severity, search, page = 1, limit = 12 } = req.query;
+        const { category, severity, status, search, page = 1, limit = 12 } = req.query;
 
-        const filter = { status: 'approved' };
+        const filter = {};
+        if (status) {
+            filter.status = status;
+        } else {
+            // Par défaut: approuvés OU en attente (pour que les gens puissent confirmer)
+            filter.status = { $in: ['approved', 'pending'] };
+        }
         if (category) filter.category = category;
         if (severity) filter.severity = severity;
         if (search) {
@@ -168,7 +174,7 @@ router.post(
         body('description').trim().notEmpty().withMessage('La description est obligatoire.')
             .isLength({ min: 20, max: 2000 }).withMessage('La description doit contenir entre 20 et 2000 caractères.'),
         body('category')
-            .isIn(['theft', 'assault', 'vandalism', 'suspicious_activity', 'fire', 'accident', 'other'])
+            .isIn(['theft', 'assault', 'vandalism', 'suspicious_activity', 'fire', 'kidnapping', 'other'])
             .withMessage('Catégorie invalide.'),
         body('severity')
             .isIn(['low', 'medium', 'high', 'critical'])
@@ -203,8 +209,11 @@ router.post(
                     address,
                     city,
                     coordinates: {
-                        lat: lat ? parseFloat(lat) : null,
-                        lng: lng ? parseFloat(lng) : null,
+                        type: 'Point',
+                        coordinates: [
+                            lng ? parseFloat(lng) : 0,
+                            lat ? parseFloat(lat) : 0
+                        ]
                     }
                 },
                 images,
@@ -222,8 +231,12 @@ router.post(
                 incident,
             });
         } catch (err) {
-            console.error('Erreur POST /incidents :', err.message);
-            res.status(500).json({ success: false, message: 'Erreur serveur lors du signalement.' });
+            console.error('Erreur POST /incidents DETAIL :', err);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Erreur serveur lors du signalement.',
+                error: process.env.NODE_ENV === 'development' ? err.message : undefined
+            });
         }
     }
 );
@@ -358,6 +371,36 @@ router.put(
                 incident: incident._id,
             });
 
+            // Si approuvé, envoyer une notification à l'auteur ET aux personnes à proximité (500m)
+            if (newStatus === 'approved') {
+                // 1. Notification Author (déjà fait plus haut mais on s'assure de l'exclusion dans la suite)
+                
+                // 2. Notification Proximité (500m)
+                const nearbyUsers = await User.find({
+                    _id: { $ne: incident.reportedBy }, // Exclure l'auteur
+                    isActive: true,
+                    role: 'citizen',
+                    'location.coordinates': {
+                        $near: {
+                            $geometry: incident.location.coordinates,
+                            $maxDistance: 500 // 500 mètres
+                        }
+                    }
+                });
+
+                const proximityNotifs = nearbyUsers.map(u => ({
+                    recipient: u._id,
+                    type: 'new_incident_nearby',
+                    title: '⚠️ Alerte à proximité',
+                    message: `Un incident "${incident.title}" a été signalé à moins de 500m de vous (${incident.location.address}).`,
+                    incident: incident._id
+                }));
+
+                if (proximityNotifs.length > 0) {
+                    await Notification.insertMany(proximityNotifs);
+                }
+            }
+
             res.json({
                 success: true,
                 message: `Incident ${newStatus === 'approved' ? 'approuvé' : newStatus === 'rejected' ? 'rejeté' : 'résolu'} avec succès.`,
@@ -379,30 +422,180 @@ router.put('/:id/upvote', protect, async (req, res) => {
         if (!incident) {
             return res.status(404).json({ success: false, message: 'Incident introuvable.' });
         }
-        if (incident.status !== 'approved') {
-            return res.status(400).json({ success: false, message: 'Vous ne pouvez voter que sur un incident approuvé.' });
+        if (incident.status !== 'pending') {
+            return res.status(400).json({ success: false, message: 'Vous ne pouvez plus voter pour cet incident car il est déjà approuvé ou clôturé.' });
+        }
+
+        if (req.user.role === 'admin') {
+            return res.status(403).json({ success: false, message: 'Les administrateurs ne peuvent pas voter.' });
         }
 
         const userId = req.user._id.toString();
         const hasVoted = incident.upvotes.some((id) => id.toString() === userId);
 
         if (hasVoted) {
-            // Retirer le vote
             incident.upvotes = incident.upvotes.filter((id) => id.toString() !== userId);
         } else {
             incident.upvotes.push(req.user._id);
         }
 
+        // Logic de validation automatique : 5 votes
+        let autoApproved = false;
+        if (incident.status === 'pending' && incident.upvotes.length >= 5) {
+            incident.status = 'approved';
+            incident.moderationNote = "Approbation automatique : Seuil de 5 confirmations atteint.";
+            incident.moderatedAt = new Date();
+            autoApproved = true;
+        }
+
         await incident.save({ validateBeforeSave: false });
+
+        if (autoApproved) {
+            // Envoyer une notification à l'auteur
+            await Notification.create({
+                recipient: incident.reportedBy,
+                type: 'incident_approved',
+                title: 'Incident approuvé automatiquement ✅',
+                message: `Votre signalement "${incident.title}" a été approuvé automatiquement grâce aux confirmations de la communauté.`,
+                incident: incident._id,
+            });
+
+            // Notification proximité (500m) pour les autres
+            const nearbyUsers = await User.find({
+                _id: { $ne: incident.reportedBy },
+                isActive: true,
+                role: 'citizen',
+                'location.coordinates': {
+                    $near: {
+                        $geometry: incident.location.coordinates,
+                        $maxDistance: 500
+                    }
+                }
+            });
+
+            const proximityNotifs = nearbyUsers.map(u => ({
+                recipient: u._id,
+                type: 'new_incident_nearby',
+                title: '⚠️ Alerte à proximité (Confirmée)',
+                message: `L'incident "${incident.title}" a été confirmé par la communauté à moins de 500m de vous.`,
+                incident: incident._id
+            }));
+
+            if (proximityNotifs.length > 0) {
+                await Notification.insertMany(proximityNotifs);
+            }
+        }
 
         res.json({
             success: true,
             message: hasVoted ? 'Vote retiré.' : 'Vote enregistré.',
+            incident,
             upvoteCount: incident.upvotes.length,
             hasVoted: !hasVoted,
+            status: incident.status,
+            autoApproved
         });
     } catch (err) {
         console.error('Erreur PUT /incidents/:id/upvote :', err.message);
+        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/incidents/:id — Modifier son propre incident (avant approbation)
+// ─────────────────────────────────────────────────────────────────────────────
+router.put(
+    '/:id',
+    protect,
+    upload.array('images', 4),
+    [
+        body('title').optional().trim().isLength({ min: 5, max: 100 }),
+        body('description').optional().trim().isLength({ min: 20, max: 2000 }),
+        body('category').optional().isIn(['theft', 'assault', 'vandalism', 'suspicious_activity', 'fire', 'kidnapping', 'other']),
+        body('severity').optional().isIn(['low', 'medium', 'high', 'critical']),
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) return res.status(400).json({ success: false, errors: errors.array() });
+
+        try {
+            const incident = await Incident.findById(req.params.id);
+            if (!incident) return res.status(404).json({ success: false, message: 'Incident introuvable.' });
+
+            // Sécurité : Seul l'auteur peut modifier
+            if (incident.reportedBy.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ success: false, message: 'Action interdite.' });
+            }
+
+            // Sécurité : On ne peut modifier qu'en attente
+            if (incident.status !== 'pending') {
+                return res.status(400).json({ success: false, message: 'Vous ne pouvez plus modifier cet incident une fois approuvé.' });
+            }
+
+            const { title, description, category, severity, address, city, lat, lng } = req.body;
+
+            if (title) incident.title = title;
+            if (description) incident.description = description;
+            if (category) incident.category = category;
+            if (severity) incident.severity = severity;
+            if (address) incident.location.address = address;
+            if (city) incident.location.city = city;
+            
+            if (lat && lng) {
+                incident.location.coordinates = {
+                    type: 'Point',
+                    coordinates: [parseFloat(lng), parseFloat(lat)]
+                };
+            }
+
+            // Gestion des nouvelles images
+            if (req.files && req.files.length > 0) {
+                const newImages = req.files.map(f => ({
+                    filename: f.filename,
+                    originalName: f.originalname,
+                    path: f.path.replace(/\\/g, '/'),
+                    size: f.size,
+                    mimetype: f.mimetype,
+                }));
+                // Dans cet exemple, on ajoute aux images existantes
+                incident.images.push(...newImages);
+            }
+
+            await incident.save();
+
+            res.json({ success: true, message: 'Incident mis à jour.', incident });
+        } catch (err) {
+            console.error('Erreur PUT /incidents/:id :', err);
+            res.status(500).json({ success: false, message: 'Erreur serveur.' });
+        }
+    }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/incidents/:id/notify-services — Notifier les services compétents (admin)
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/:id/notify-services', protect, adminOnly, async (req, res) => {
+    try {
+        const { service, message } = req.body; // service: 'police' | 'firefighters'
+        const incident = await Incident.findById(req.params.id);
+        
+        if (!incident) return res.status(404).json({ success: false, message: 'Incident introuvable.' });
+        if (incident.status !== 'approved') return res.status(400).json({ success: false, message: 'L\'incident doit être approuvé avant de notifier les services.' });
+
+        // Ici on simulerait l'envoi d'un mail ou d'une notification push aux services
+        // Pour l'instant on met à jour une note ou un flag si nécessaire
+        console.log(`Notification envoyée au service ${service} pour l'incident ${incident.title}`);
+        
+        // On pourrait ajouter une note de modération automatique
+        incident.moderationNote = `${incident.moderationNote || ''}\n[Notification Service] ${service.toUpperCase()} contacté le ${new Date().toLocaleString()}.`.trim();
+        await incident.save();
+
+        res.json({ 
+            success: true, 
+            message: `Le service ${service === 'police' ? 'de Police' : 'des Sapeurs-Pompiers'} a été notifié.` 
+        });
+    } catch (err) {
+        console.error('Erreur POST /incidents/:id/notify-services :', err.message);
         res.status(500).json({ success: false, message: 'Erreur serveur.' });
     }
 });

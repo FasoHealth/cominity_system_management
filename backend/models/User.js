@@ -35,6 +35,10 @@ const UserSchema = new mongoose.Schema(
             trim: true,
             default: null,
         },
+        avatar: {
+            type: String,
+            default: null,
+        },
 
         // ── Rôle et statut ───────────────────────────────────────────────────────
         role: {
@@ -52,6 +56,10 @@ const UserSchema = new mongoose.Schema(
             address: { type: String, default: null },
             city: { type: String, default: null },
             country: { type: String, default: 'Burkina Faso' },
+            coordinates: {
+                type: { type: String, enum: ['Point'], default: 'Point' },
+                coordinates: { type: [Number], default: [0, 0] } // [lng, lat]
+            },
         },
 
         // ── Statistiques ─────────────────────────────────────────────────────────
@@ -72,6 +80,10 @@ const UserSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+
+        // ── Réinitialisation du mot de passe ──────────────────────────────────────
+        resetPasswordToken: String,
+        resetPasswordExpire: Date,
     },
     {
         timestamps: true, // Ajoute createdAt et updatedAt automatiquement
@@ -102,5 +114,8 @@ UserSchema.methods.toSafeObject = function () {
     const { password, ...safeUser } = this.toObject();
     return safeUser;
 };
+
+// ── Index géospatial ────────────────────────────────────────────────────────
+UserSchema.index({ 'location.coordinates': '2dsphere' });
 
 module.exports = mongoose.model('User', UserSchema);

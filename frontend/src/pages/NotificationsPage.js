@@ -2,13 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { 
+    Bell, 
+    BellOff, 
+    CheckCircle2, 
+    XCircle, 
+    Trophy, 
+    ShieldAlert, 
+    Clock, 
+    Eye, 
+    FileText,
+    MessageSquare,
+    ChevronRight
+} from 'lucide-react';
 
 const NOTIF_ICONS = {
-    incident_approved: '✅',
-    incident_rejected: '❌',
-    incident_resolved: '🏆',
-    new_incident_nearby: '🚨',
-    default: '🔔',
+    incident_approved: CheckCircle2,
+    incident_rejected: XCircle,
+    incident_resolved: Trophy,
+    new_incident_nearby: ShieldAlert,
+    new_message: MessageSquare,
+    default: Bell,
 };
 
 function timeAgo(date) {
@@ -61,12 +75,12 @@ const NotificationsPage = () => {
     return (
         <div className="page-container fade-in">
             {/* Header */}
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
                 <div>
-                    <h1 className="page-title">
-                        🔔 Notifications
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <Bell size={28} color="var(--brand-orange)" /> Notifications
                         {unreadCount > 0 && (
-                            <span className="sidebar-link-badge" style={{ marginLeft: 10, fontSize: '0.8rem', verticalAlign: 'middle' }}>
+                            <span className="sidebar-link-badge" style={{ fontSize: '0.8rem', verticalAlign: 'middle', padding: '2px 10px', borderRadius: 20 }}>
                                 {unreadCount}
                             </span>
                         )}
@@ -74,8 +88,8 @@ const NotificationsPage = () => {
                     <p className="page-subtitle">Restez informé de l'évolution de vos signalements.</p>
                 </div>
                 {unreadCount > 0 && (
-                    <button className="btn btn-secondary btn-sm" onClick={markAllRead}>
-                        ✓ Tout marquer comme lu
+                    <button className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={markAllRead}>
+                        <Eye size={16} /> Tout marquer comme lu
                     </button>
                 )}
             </div>
@@ -83,55 +97,82 @@ const NotificationsPage = () => {
             {loading ? (
                 <div className="page-loader"><div className="spinner" /><p>Chargement des notifications...</p></div>
             ) : notifications.length > 0 ? (
-                <div className="notif-list">
+                <div className="notif-list" style={{ marginTop: 24 }}>
                     {notifications.map(notif => {
-                        const icon = NOTIF_ICONS[notif.type] || NOTIF_ICONS.default;
-                        const iconBg = notif.type === 'incident_approved' ? 'var(--green-bg)'
-                            : notif.type === 'incident_rejected' ? 'var(--red-bg)'
-                                : notif.type === 'incident_resolved' ? 'var(--blue-bg)'
-                                    : notif.type === 'new_incident_nearby' ? 'rgba(232,84,26,0.12)'
-                                        : 'rgba(107,114,128,0.1)';
+                        const IconComponent = NOTIF_ICONS[notif.type] || NOTIF_ICONS.default;
+                        const iconColor = notif.type === 'incident_approved' ? '#10b981'
+                            : notif.type === 'incident_rejected' ? '#ef4444'
+                                : notif.type === 'incident_resolved' ? '#3b82f6'
+                                    : notif.type === 'new_incident_nearby' ? 'var(--brand-orange)'
+                                        : notif.type === 'new_message' ? '#8b5cf6'
+                                            : 'var(--text-secondary)';
+                        const iconBg = notif.type === 'incident_approved' ? 'rgba(16, 185, 129, 0.1)'
+                            : notif.type === 'incident_rejected' ? 'rgba(239, 68, 68, 0.1)'
+                                : notif.type === 'incident_resolved' ? 'rgba(59, 130, 246, 0.1)'
+                                    : notif.type === 'new_incident_nearby' ? 'rgba(232, 84, 26, 0.1)'
+                                        : notif.type === 'new_message' ? 'rgba(139, 92, 246, 0.1)'
+                                            : 'rgba(107, 114, 128, 0.1)';
 
                         return (
                             <div
                                 key={notif._id}
                                 className={`notif-item${!notif.isRead ? ' unread' : ''} fade-in`}
                                 onClick={() => markAsRead(notif._id, notif.incident?._id)}
+                                style={{ borderRadius: 12, marginBottom: 12, padding: 16, border: '1px solid var(--border)', background: 'var(--bg-primary)', cursor: 'pointer', transition: 'all 0.2s' }}
                             >
-                                <div className="notif-icon" style={{ background: iconBg }}>{icon}</div>
-                                <div className="notif-content">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                                        <span className="notif-title">{notif.title}</span>
-                                        {!notif.isRead && (
-                                            <span style={{
-                                                fontSize: '0.65rem', fontWeight: 700, color: 'var(--brand-orange)',
-                                                background: 'rgba(232,84,26,0.1)', padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0
-                                            }}>Nouveau</span>
-                                        )}
+                                <div style={{ display: 'flex', gap: 16 }}>
+                                    <div className="notif-icon" style={{ 
+                                        background: iconBg, 
+                                        width: 48, height: 48, borderRadius: 12, 
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        flexShrink: 0
+                                    }}>
+                                        <IconComponent size={24} color={iconColor} />
                                     </div>
-                                    <p className="notif-body">{notif.message}</p>
-                                    {notif.incident && (
-                                        <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6 }}>
-                                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>📂 Incident :</span>
-                                            <span style={{
-                                                fontSize: '0.72rem', fontWeight: 600, color: 'var(--brand-orange)',
-                                                background: 'var(--brand-orange-pale)', padding: '2px 8px', borderRadius: 10
-                                            }}>
-                                                {notif.incident.title}
-                                            </span>
+                                    <div className="notif-content" style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                                            <span className="notif-title" style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{notif.title}</span>
+                                            {!notif.isRead && (
+                                                <span style={{
+                                                    fontSize: '0.65rem', fontWeight: 800, color: 'var(--brand-orange)',
+                                                    background: 'rgba(232,84,26,0.1)', padding: '2px 10px', borderRadius: 20, whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.05em'
+                                                }}>Nouveau</span>
+                                            )}
                                         </div>
-                                    )}
-                                    <div className="notif-time">🕒 {timeAgo(notif.createdAt)}</div>
+                                        <p className="notif-body" style={{ color: 'var(--text-secondary)', margin: '4px 0 12px', lineHeight: 1.5 }}>{notif.message}</p>
+                                        
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                                            {notif.incident && (
+                                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                                    <FileText size={12} color="var(--text-muted)" />
+                                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand-orange)' }}>
+                                                        {notif.incident.title}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className="notif-time" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                <Clock size={12} /> {timeAgo(notif.createdAt)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', opacity: 0.3 }}>
+                                        <ChevronRight size={20} />
+                                    </div>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
             ) : (
-                <div className="card empty-state">
-                    <div className="empty-state-icon">🔕</div>
-                    <p className="empty-state-title">Tout est calme</p>
-                    <p className="empty-state-desc">Vous n'avez aucune notification récente.<br />Signaler des incidents pour rester informé !</p>
+                <div className="card empty-state" style={{ padding: '64px 24px', textAlign: 'center' }}>
+                    <div className="empty-state-icon" style={{ marginBottom: 20 }}>
+                        <BellOff size={64} opacity={0.1} />
+                    </div>
+                    <p className="empty-state-title" style={{ fontSize: '1.2rem', fontWeight: 700 }}>Tout est calme</p>
+                    <p className="empty-state-desc" style={{ color: 'var(--text-muted)', marginTop: 8 }}>
+                        Vous n'avez aucune notification récente.<br />
+                        Signalez des incidents pour rester informé de l'activité dans votre quartier !
+                    </p>
                 </div>
             )}
         </div>

@@ -1,6 +1,15 @@
 // frontend/src/components/ChatBox.js
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { 
+    Check, 
+    CheckCheck, 
+    MessageSquare, 
+    Inbox, 
+    Send, 
+    Paperclip, 
+    Image as ImageIcon 
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const ChatBox = ({ incidentId }) => {
@@ -25,7 +34,7 @@ const ChatBox = ({ incidentId }) => {
         };
 
         fetchMessages();
-        const interval = setInterval(fetchMessages, 4000); // Polling plus rapide
+        const interval = setInterval(fetchMessages, 5000);
         return () => clearInterval(interval);
     }, [incidentId]);
 
@@ -40,7 +49,6 @@ const ChatBox = ({ incidentId }) => {
         const text = newMessage.trim();
         if (!text) return;
 
-        // Vider l'input immédiatement pour une meilleure UX
         setNewMessage('');
 
         try {
@@ -48,83 +56,266 @@ const ChatBox = ({ incidentId }) => {
                 content: text
             });
             if (data.success) {
-                // On ajoute le message à la liste locale (avec ses ticks initiaux)
                 setMessages(prev => [...prev, data.message]);
             }
         } catch (err) {
             console.error('Erreur envoi message:', err);
-            // Optionnel: remettre le texte si erreur
             setNewMessage(text);
         }
     };
 
     const renderTicks = (msg) => {
-        // Seulement pour les messages envoyés par l'utilisateur actuel
-        if (msg.sender._id !== user._id) return null;
-
-        const isRead = msg.readBy.length > 1; // Lu par quelqu'un d'autre (l'autre partie)
-
-        if (isRead) {
-            return (
-                <span className="chat-ticks read" title="Lu">
-                    <span className="tick"></span>
-                    <span className="tick"></span>
-                </span>
-            );
-        }
+        if (msg.sender?._id !== user._id) return null;
+        const isRead = msg.readBy.length > 1;
 
         return (
-            <span className="chat-ticks delivered" title="Reçu">
-                <span className="tick"></span>
-                <span className="tick"></span>
-            </span>
+            <div className={`chat-ticks ${isRead ? 'read' : 'delivered'}`}>
+                {isRead ? <CheckCheck size={14} /> : <Check size={14} />}
+            </div>
         );
     };
 
-    if (loading) return <div className="chat-loading">Chargement de la conversation...</div>;
+    if (loading) return (
+        <div className="chat-loading-shimmer">
+            <div className="shimmer-line"></div>
+            <div className="shimmer-line short"></div>
+        </div>
+    );
 
     return (
-        <div className="chat-container fade-in">
-            <div className="chat-header">
-                <h3>💬 Discussion avec {user.role === 'admin' ? 'le déclarant' : 'l\'administration'}</h3>
+        <div className="premium-chat-box">
+            <div className="chat-header-banner">
+                <div className="chat-icon-wrapper">
+                    <MessageSquare size={18} />
+                </div>
+                <div className="chat-info">
+                    <h3>Conversation Officielle</h3>
+                    <p>{user.role === 'admin' ? 'Support Citoyen' : 'Discussion avec l\'Administration'}</p>
+                </div>
             </div>
 
-            <div className="chat-messages" ref={scrollRef}>
+            <div className="chat-messages-viewport" ref={scrollRef}>
                 {messages.length === 0 ? (
-                    <div className="chat-empty">
-                        <p>Aucun message pour le moment.</p>
-                        <p style={{ fontSize: '0.8rem', opacity: 0.6 }}>{user.role === 'admin' ? 'Demandez plus de précisions à la victime.' : 'L\'administration pourra vous poser des questions ici.'}</p>
+                    <div className="chat-welcome">
+                        <div className="welcome-icon">
+                            <Inbox size={48} opacity={0.2} />
+                        </div>
+                        <h4>Aucun message</h4>
+                        <p>{user.role === 'admin' 
+                            ? 'Démarrez la conversation pour aider le citoyen.' 
+                            : 'L\'administration pourra vous contacter ici pour plus d\'informations.'}
+                        </p>
                     </div>
                 ) : (
-                    messages.map((msg, i) => (
-                        <div key={i} className={`chat-bubble-wrapper ${msg.sender._id === user._id ? 'sent' : 'received'}`}>
-                            <div className="chat-sender-info">
-                                {msg.sender.name}
-                            </div>
-                            <div className="chat-bubble">
-                                {msg.content}
-                                <div className="chat-meta-msg">
-                                    <span className="chat-time">
-                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                    {renderTicks(msg)}
+                    messages.map((msg, i) => {
+                        const isMe = msg.sender?._id === user._id;
+                        const senderName = msg.sender?.role === 'admin' ? 'ADMINISTRATION' : msg.sender?.name;
+                        
+                        return (
+                            <div key={i} className={`message-row ${isMe ? 'me' : 'them'}`}>
+                                {!isMe && <div className="sender-tag">{senderName}</div>}
+                                <div className="bubble-context">
+                                    <div className="message-bubble">
+                                        {msg.content}
+                                    </div>
+                                    <div className="message-meta-data">
+                                        <span className="msg-time">
+                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                        {renderTicks(msg)}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
-            <form className="chat-input-area" onSubmit={handleSendMessage}>
-                <input
-                    type="text"
-                    placeholder="Écrivez votre message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    autoComplete="off"
-                />
-                <button type="submit" className="btn btn-primary btn-sm">Envoyer</button>
+            <form className="chat-composer" onSubmit={handleSendMessage}>
+                <div className="composer-wrapper">
+                    <button type="button" className="btn-icon" style={{ color: 'var(--text-muted)' }}>
+                        <Paperclip size={18} />
+                    </button>
+                    <input
+                        type="text"
+                        placeholder="Répondre..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        autoComplete="off"
+                    />
+                    <button type="submit" disabled={!newMessage.trim()}>
+                        <Send size={18} />
+                    </button>
+                </div>
             </form>
+
+            <style>{`
+                .premium-chat-box {
+                    background: var(--bg-secondary);
+                    border-radius: var(--radius-lg);
+                    border: 1px solid var(--border);
+                    display: flex;
+                    flex-direction: column;
+                    height: 500px;
+                    overflow: hidden;
+                    box-shadow: var(--shadow-md);
+                    position: relative;
+                }
+
+                .chat-header-banner {
+                    padding: 16px 20px;
+                    background: var(--brand-navy);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .chat-icon-wrapper {
+                    width: 40px;
+                    height: 40px;
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.2rem;
+                }
+
+                .chat-info h3 { font-size: 0.95rem; margin: 0; font-weight: 700; letter-spacing: 0.5px; }
+                .chat-info p { font-size: 0.75rem; margin: 0; opacity: 0.7; }
+
+                .chat-messages-viewport {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                    background: var(--bg-primary);
+                    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+                    background-size: 20px 20px;
+                }
+
+                .chat-welcome {
+                    margin: auto;
+                    text-align: center;
+                    max-width: 280px;
+                    opacity: 0.6;
+                }
+                .welcome-icon { font-size: 2rem; margin-bottom: 12px; }
+
+                .message-row {
+                    display: flex;
+                    flex-direction: column;
+                    max-width: 80%;
+                    animation: slideUp 0.3s ease-out;
+                }
+
+                @keyframes slideUp {
+                    from { transform: translateY(10px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+
+                .message-row.me { align-self: flex-end; }
+                .message-row.them { align-self: flex-start; }
+
+                .sender-tag {
+                    font-size: 0.65rem;
+                    font-weight: 800;
+                    margin-bottom: 4px;
+                    color: var(--brand-orange);
+                    letter-spacing: 0.8px;
+                    margin-left: 4px;
+                }
+
+                .message-bubble {
+                    padding: 12px 16px;
+                    border-radius: 18px;
+                    font-size: 0.9rem;
+                    line-height: 1.5;
+                    position: relative;
+                }
+
+                .me .message-bubble {
+                    background: var(--brand-orange);
+                    color: white;
+                    border-bottom-right-radius: 4px;
+                    box-shadow: 0 4px 12px rgba(232, 84, 26, 0.2);
+                }
+
+                .them .message-bubble {
+                    background: var(--bg-secondary);
+                    color: var(--text-primary);
+                    border-bottom-left-radius: 4px;
+                    border: 1px solid var(--border);
+                    box-shadow: var(--shadow-sm);
+                }
+
+                .message-meta-data {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 4px;
+                    margin-top: 4px;
+                    padding: 0 4px;
+                }
+
+                .msg-time { font-size: 0.65rem; opacity: 0.5; font-weight: 500; }
+
+                .chat-ticks { display: flex; font-size: 0.7rem; }
+                .chat-ticks.delivered { color: var(--text-muted); }
+                .chat-ticks.read { color: #34b7f1; }
+                .tick { margin-left: -4px; font-weight: 700; }
+
+                .chat-composer {
+                    padding: 16px 20px;
+                    background: var(--bg-secondary);
+                    border-top: 1px solid var(--border);
+                }
+
+                .composer-wrapper {
+                    background: var(--bg-primary);
+                    border-radius: 24px;
+                    padding: 4px 4px 4px 16px;
+                    display: flex;
+                    align-items: center;
+                    border: 1.5px solid var(--border);
+                    transition: all 0.2s;
+                }
+
+                .composer-wrapper:focus-within {
+                    border-color: var(--brand-orange);
+                    box-shadow: 0 0 0 3px rgba(232, 84, 26, 0.1);
+                }
+
+                .composer-wrapper input {
+                    flex: 1;
+                    border: none;
+                    background: transparent;
+                    padding: 10px 0;
+                    outline: none;
+                    font-size: 0.9rem;
+                    color: var(--text-primary);
+                }
+
+                .composer-wrapper button {
+                    width: 36px;
+                    height: 36px;
+                    background: var(--brand-orange);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                }
+
+                .composer-wrapper button:hover:not(:disabled) { transform: scale(1.05); }
+                .composer-wrapper button:disabled { opacity: 0.3; cursor: default; }
+            `}</style>
         </div>
     );
 };

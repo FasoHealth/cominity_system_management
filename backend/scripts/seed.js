@@ -36,8 +36,8 @@ const guides = [
         emergencyNumber: '18'
     },
     {
-        category: 'accident',
-        title: 'Accident de la route ou malaise',
+        category: 'kidnapping',
+        title: 'Faire face à un enlèvement',
         content: 'Sécurisez la zone et appelez les secours avant toute manipulation de blessé.',
         doList: [
             'Protégez les lieux avec les signaux visuels (triangle, gilet)',

@@ -1,6 +1,22 @@
-// frontend/src/pages/admin/AdminUsersPage.js — v2 with avatars+toggles
+// frontend/src/pages/admin/AdminUsersPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+    Users, 
+    Search, 
+    UserPlus, 
+    User, 
+    Mail, 
+    Shield, 
+    Activity, 
+    Calendar, 
+    AlertTriangle, 
+    ChevronLeft, 
+    ChevronRight,
+    UserCheck,
+    Ban,
+    MoreHorizontal
+} from 'lucide-react';
 
 function initials(name = '') {
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -50,20 +66,24 @@ const AdminUsersPage = () => {
     return (
         <div className="page-container fade-in">
             {/* Header */}
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <h1 className="page-title" style={{ margin: 0 }}>Utilisateurs</h1>
-                    <span style={{ background: 'var(--brand-orange-pale)', color: 'var(--brand-orange)', fontSize: '0.75rem', fontWeight: 700, padding: '4px 12px', borderRadius: 20 }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <h1 className="page-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <Users size={28} color="var(--brand-orange)" /> Utilisateurs
+                    </h1>
+                    <span style={{ background: 'rgba(232,84,26,0.1)', color: 'var(--brand-orange)', fontSize: '0.75rem', fontWeight: 800, padding: '4px 12px', borderRadius: 20 }}>
                         {users.length} au total
                     </span>
                 </div>
-                <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 12 }}>
                     <div style={{ position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>🔍</span>
+                        <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
                         <input placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
-                            style={{ paddingLeft: 32, padding: '8px 14px 8px 32px', border: '1.5px solid var(--border)', borderRadius: 8, fontSize: '0.85rem', background: 'var(--bg-card)', color: 'var(--text-primary)', outline: 'none', minWidth: 220 }} />
+                            style={{ padding: '10px 14px 10px 38px', border: '1px solid var(--border)', borderRadius: 10, fontSize: '0.85rem', background: 'var(--bg-card)', color: 'var(--text-primary)', outline: 'none', minWidth: 240 }} />
                     </div>
-                    <button className="btn btn-primary btn-sm">+ Nouvel Utilisateur</button>
+                    <button className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 8, height: 42, borderRadius: 10 }}>
+                        <UserPlus size={16} /> Nouvel Utilisateur
+                    </button>
                 </div>
             </div>
 
@@ -71,17 +91,17 @@ const AdminUsersPage = () => {
                 <div className="page-loader"><div className="spinner" /><p>Chargement de l'annuaire...</p></div>
             ) : (
                 <>
-                    <div className="card" style={{ marginBottom: 24 }}>
+                    <div className="card" style={{ marginBottom: 24, borderRadius: 16, overflow: 'hidden', border: '1px solid var(--border)' }}>
                         <div className="table-wrapper">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>UTILISATEUR</th>
-                                        <th>EMAIL</th>
-                                        <th>RÔLE</th>
-                                        <th>STATUT</th>
-                                        <th>INSCRIT LE</th>
-                                        <th>SIGNALEMENTS</th>
+                                        <th style={{ display: 'flex', alignItems: 'center', gap: 8 }}><User size={14} /> UTILISATEUR</th>
+                                        <th><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Mail size={14} /> EMAIL</div></th>
+                                        <th><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Shield size={14} /> RÔLE</div></th>
+                                        <th><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Activity size={14} /> STATUT</div></th>
+                                        <th><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Calendar size={14} /> INSCRIT LE</div></th>
+                                        <th><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={14} /> SIGNALEMENTS</div></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -92,26 +112,24 @@ const AdminUsersPage = () => {
                                             <tr key={u._id}>
                                                 <td>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.78rem', flexShrink: 0 }}>
+                                                        <div style={{ width: 36, height: 36, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: '0.7rem', flexShrink: 0, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
                                                             {initials(u.name)}
                                                         </div>
-                                                        <div>
-                                                            <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{u.name}</div>
-                                                        </div>
+                                                        <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)' }}>{u.name}</div>
                                                     </div>
                                                 </td>
                                                 <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{u.email}</td>
                                                 <td>
                                                     <span style={{
-                                                        fontSize: '0.78rem', fontWeight: 600,
+                                                        fontSize: '0.72rem', fontWeight: 700,
                                                         background: u.role === 'admin' ? 'rgba(232,84,26,0.1)' : 'var(--bg-secondary)',
                                                         color: u.role === 'admin' ? 'var(--brand-orange)' : 'var(--text-secondary)',
-                                                        padding: '3px 10px', borderRadius: 20,
+                                                        padding: '4px 10px', borderRadius: 6,
                                                         border: `1px solid ${u.role === 'admin' ? 'rgba(232,84,26,0.2)' : 'var(--border)'}`,
+                                                        textTransform: 'uppercase', letterSpacing: '0.05em'
                                                     }}>{u.role === 'admin' ? 'Admin' : u.role === 'guide' ? 'Modérateur' : 'Citoyen'}</span>
                                                 </td>
                                                 <td>
-                                                    {/* Toggle switch */}
                                                     <label className="toggle-label" style={{ margin: 0 }} title={isLoading ? 'Traitement...' : (u.isActive ? 'Désactiver' : 'Activer')}>
                                                         <input type="checkbox" className="toggle-input"
                                                             checked={u.isActive}
@@ -124,7 +142,12 @@ const AdminUsersPage = () => {
                                                     {new Date(u.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                                 <td style={{ textAlign: 'center' }}>
-                                                    <span style={{ fontWeight: 700, color: u.incidentsReported > 5 ? 'var(--brand-orange)' : 'var(--text-primary)' }}>
+                                                    <span style={{ 
+                                                        fontWeight: 800, 
+                                                        color: u.incidentsReported > 5 ? 'var(--brand-orange)' : 'var(--text-primary)',
+                                                        background: u.incidentsReported > 0 ? 'var(--bg-secondary)' : 'transparent',
+                                                        padding: '2px 8px', borderRadius: 4
+                                                    }}>
                                                         {u.incidentsReported || 0}
                                                     </span>
                                                 </td>
@@ -137,38 +160,45 @@ const AdminUsersPage = () => {
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderTop: '1px solid var(--border)' }}>
-                                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                                    Affichage de {(page - 1) * LIMIT + 1}-{Math.min(page * LIMIT, users.length)} sur {users.length} utilisateurs
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                                    Affichage de {(page - 1) * LIMIT + 1}-{Math.min(page * LIMIT, users.length)} sur {users.length}
                                 </span>
-                                <div className="pagination">
-                                    <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</button>
+                                <div className="pagination" style={{ display: 'flex', gap: 6 }}>
+                                    <button className="page-btn" style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+                                        <ChevronLeft size={16} />
+                                    </button>
                                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map(p => (
-                                        <button key={p} className={`page-btn${page === p ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
+                                        <button key={p} className={`page-btn${page === p ? ' active' : ''}`} style={{ width: 32, height: 32, padding: 0 }} onClick={() => setPage(p)}>{p}</button>
                                     ))}
-                                    <button className="page-btn" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>›</button>
+                                    <button className="page-btn" style={{ width: 32, height: 32, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+                                        <ChevronRight size={16} />
+                                    </button>
                                 </div>
                             </div>
                         )}
                     </div>
 
                     {/* Summary cards */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
                         {[
-                            { icon: '👤', label: 'Comptes Actifs', value: activeCnt, color: 'var(--green)', bg: 'var(--green-bg)' },
-                            { icon: '🚫', label: 'Bannis', value: bannedCnt, color: 'var(--red)', bg: 'var(--red-bg)' },
-                            { icon: '🛡️', label: 'Nouveaux ce mois', value: users.filter(u => { const d = new Date(u.createdAt); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length, color: 'var(--blue)', bg: 'var(--blue-bg)' },
-                        ].map((s, i) => (
-                            <div key={i} className="card" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px' }}>
-                                <div style={{ width: 48, height: 48, borderRadius: '50%', background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
-                                    {s.icon}
+                            { icon: UserCheck, label: 'Comptes Actifs', value: activeCnt, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+                            { icon: Ban, label: 'Bannis / Inactifs', value: bannedCnt, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+                            { icon: UserPlus, label: 'Nouveaux ce mois', value: users.filter(u => { const d = new Date(u.createdAt); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+                        ].map((s, i) => {
+                            const Icon = s.icon;
+                            return (
+                                <div key={i} className="card" style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '24px', borderRadius: 16 }}>
+                                    <div style={{ width: 56, height: 56, borderRadius: 14, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                        <Icon size={28} color={s.color} />
+                                    </div>
+                                    <div>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{s.label}</div>
+                                        <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--text-primary)' }}>{s.value.toLocaleString()}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', fontWeight: 600, marginBottom: 4 }}>{s.label}</div>
-                                    <div style={{ fontSize: '1.6rem', fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </>
             )}
