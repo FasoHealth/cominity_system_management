@@ -202,18 +202,7 @@ const AdminIncidentsPage = () => {
                                     )}
                                     {activeTab === 'approved' && (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                            <div style={{ display: 'flex', gap: 8 }}>
-                                                <button className="btn btn-sm btn-ghost" style={{ flex: 1, fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(59,130,246,0.1)', color: '#1d4ed8', border: '1px solid rgba(59,130,246,0.2)' }}
-                                                    disabled={actionLoading === `${inc._id}-police`}
-                                                    onClick={() => handleNotifyService(inc._id, 'police')}>
-                                                    <ShieldAlert size={12} /> Police
-                                                </button>
-                                                <button className="btn btn-sm btn-ghost" style={{ flex: 1, fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(239,68,68,0.1)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)' }}
-                                                    disabled={actionLoading === `${inc._id}-firefighters`}
-                                                    onClick={() => handleNotifyService(inc._id, 'firefighters')}>
-                                                    <Flame size={12} /> Pompiers
-                                                </button>
-                                            </div>
+
                                             <button className="btn btn-sm btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 36, borderRadius: 8 }} onClick={() => handleModerate(inc._id, 'resolved')}>
                                                 <Trophy size={14} /> Marquer Résolu
                                             </button>

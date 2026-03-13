@@ -26,7 +26,8 @@ import {
     AlertCircle,
     Info,
     CheckCircle,
-    ClipboardCheck
+    ClipboardCheck,
+    X
 } from 'lucide-react';
 
 let DefaultIcon = L.icon({ iconUrl: icon, shadowUrl: iconShadow, iconSize: [25, 41], iconAnchor: [12, 41] });
@@ -83,9 +84,19 @@ const ReportIncidentPage = () => {
     const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
 
     const handleImageChange = (e) => {
-        const files = Array.from(e.target.files).slice(0, 4);
-        setImages(files);
-        setPreviews(files.map(f => URL.createObjectURL(f)));
+        const newFiles = Array.from(e.target.files);
+        
+        // Calculer combien d'images on peut encore ajouter
+        const remainingSlots = 4 - images.length;
+        if (remainingSlots <= 0) return; // Limite atteinte
+        
+        const filesToAdd = newFiles.slice(0, remainingSlots);
+        
+        setImages(prev => [...prev, ...filesToAdd]);
+        setPreviews(prev => [...prev, ...filesToAdd.map(f => URL.createObjectURL(f))]);
+        
+        // Réinitialiser l'input pour permettre de sélectionner le même fichier si on l'a supprimé juste avant
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const removeImage = (i) => {
@@ -266,10 +277,10 @@ const ReportIncidentPage = () => {
                             {previews.length > 0 && (
                                 <div className="image-previews" style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
                                     {previews.map((p, i) => (
-                                        <div key={i} className="image-preview" style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', position: 'relative', border: '1px solid var(--border)' }}>
-                                            <img src={p} alt={`Aperçu ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                            <button type="button" className="image-preview-remove" style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.5)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10 }}
-                                                onClick={() => removeImage(i)}><X size={12} /></button>
+                                        <div key={i} className="image-preview" style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', position: 'relative', border: '1px solid var(--border)', flexShrink: 0 }}>
+                                            <img src={p} alt={`Aperçu ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+                                            <button type="button" className="image-preview-remove" style={{ position: 'absolute', top: -6, right: -6, background: 'var(--brand-orange)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                                                onClick={(e) => { e.stopPropagation(); removeImage(i); }}><X size={12} strokeWidth={3} /></button>
                                         </div>
                                     ))}
                                 </div>

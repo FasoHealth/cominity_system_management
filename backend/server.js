@@ -24,6 +24,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'http://localhost:5173',
+  'https://security-allert.netlify.app',
   process.env.CLIENT_URL
 ].filter(Boolean);
 

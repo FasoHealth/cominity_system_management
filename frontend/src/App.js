@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 
 // Citizen pages
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -44,7 +45,7 @@ const AppRoutes = () => (
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/support-appeal" element={<SupportAppealPage />} />
-        <Route path="/" element={<Navigate to="/feed" replace />} />
+        <Route path="/" element={<LandingPage />} />
 
         {/* Protected (sidebar layout) */}
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
