@@ -161,9 +161,9 @@ const IncidentFeedPage = () => {
                                         boxShadow: isPending ? '0 8px 30px rgba(232,84,26,0.15)' : 'var(--shadow-sm)'
                                     }}
                                 >
-                                    <div className="incident-card-header" style={{ padding: '20px 20px 12px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                                            <div className={`cat-icon-box ${inc.category}`} style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)' }}>
+                                    <div className="incident-card-header" style={{ padding: '20px 20px 12px', flexWrap: 'wrap', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: '200px' }}>
+                                            <div className={`cat-icon-box ${inc.category}`} style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-secondary)', flexShrink: 0 }}>
                                                 <Icon size={18} />
                                             </div>
                                             <div style={{ flex: 1, minWidth: 0 }}>

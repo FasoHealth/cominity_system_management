@@ -151,9 +151,9 @@ const AdminIncidentsPage = () => {
                         const iconColor = inc.severity === 'critical' ? '#EF4444' : inc.severity === 'high' ? '#F97316' : inc.severity === 'medium' ? '#EAB308' : '#22C55E';
 
                         return (
-                            <div key={inc._id} className="mod-card fade-in" style={{ borderRadius: 16, border: '1px solid var(--border)', padding: 16, background: 'var(--bg-primary)', display: 'grid', gridTemplateColumns: '80px 1fr auto', gap: 20, alignItems: 'center', transition: 'all 0.2s' }}>
+                            <div key={inc._id} className="mod-card fade-in" style={{ borderRadius: 16, border: '1px solid var(--border)', padding: 16, background: 'var(--bg-primary)', display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center', transition: 'all 0.2s' }}>
                                 {/* Mini thumbnail */}
-                                <div className="mod-card-thumb" style={{ background: iconBg, width: 80, height: 80, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <div className="mod-card-thumb" style={{ background: iconBg, width: 80, height: 80, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     <IconComponent size={32} color={iconColor} />
                                     <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: 4, letterSpacing: '0.05em' }}>
                                         {inc.severity.toUpperCase()}
@@ -161,7 +161,7 @@ const AdminIncidentsPage = () => {
                                 </div>
 
                                 {/* Content */}
-                                <div className="mod-card-body">
+                                <div className="mod-card-body" style={{ flex: 1, minWidth: 'min(100%, 250px)' }}>
                                     <div style={{ display: 'flex', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
                                         <span className={`badge badge-${inc.category}`} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                             {CAT_LABELS[inc.category]}
@@ -185,7 +185,7 @@ const AdminIncidentsPage = () => {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="mod-card-actions" style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 160 }}>
+                                <div className="mod-card-actions" style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 240, flexShrink: 0 }}>
                                     {activeTab === 'pending' && (
                                         <div style={{ display: 'flex', gap: 8 }}>
                                             <button className="btn btn-sm btn-success" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, height: 36, borderRadius: 8 }}

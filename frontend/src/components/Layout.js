@@ -66,6 +66,27 @@ const Layout = () => {
         return () => clearInterval(interval);
     }, [user]);
 
+    // Update user location for proximity alerts (500m)
+    React.useEffect(() => {
+        if (user && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    await axios.put('/api/auth/update-profile', {
+                        location: {
+                            type: 'Point',
+                            coordinates: [longitude, latitude] // [lng, lat] for MongoDB
+                        }
+                    });
+                } catch (err) {
+                    console.error('Failed to sync location:', err);
+                }
+            }, (err) => {
+                console.warn('Geolocation permission denied or error:', err.message);
+            });
+        }
+    }, [user?._id]); // Run when a user logs in
+
     const handleLogout = () => { logout(); navigate('/login'); };
 
     const NavItem = ({ to, icon, label, end = false }) => (

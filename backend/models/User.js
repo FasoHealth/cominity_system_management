@@ -53,14 +53,12 @@ const UserSchema = new mongoose.Schema(
 
         // ── Localisation de l'utilisateur (optionnelle) ──────────────────────────
         location: {
-            address: { type: String, default: null },
-            city: { type: String, default: null },
-            country: { type: String, default: 'Burkina Faso' },
-            coordinates: {
-                type: { type: String, enum: ['Point'], default: 'Point' },
-                coordinates: { type: [Number], default: [0, 0] } // [lng, lat]
-            },
-        },
+    address: { type: String, default: null },
+    city: { type: String, default: null },
+    country: { type: String, default: 'Burkina Faso' },
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], default: [0, 0] },
+},
 
         // ── Statistiques ─────────────────────────────────────────────────────────
         incidentsReported: {
@@ -110,5 +108,6 @@ UserSchema.methods.toSafeObject = function () {
 
 // ── Index géospatial ────────────────────────────────────────────────────────
 UserSchema.index({ 'location.coordinates': '2dsphere' });
-
+// APRÈS
+UserSchema.index({ location: '2dsphere' });
 module.exports = mongoose.model('User', UserSchema);
