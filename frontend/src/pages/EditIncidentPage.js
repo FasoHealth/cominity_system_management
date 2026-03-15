@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -54,8 +55,26 @@ const ChangeView = ({ center }) => {
 };
 
 const EditIncidentPage = () => {
+    const { t } = useTranslation();
     const { id } = useParams();
     const { theme } = useTheme();
+
+    const CATS = [
+        { value: 'theft', label: t('feed.categories.theft'), icon: ShieldAlert },
+        { value: 'assault', label: t('feed.categories.assault'), icon: ShieldAlert },
+        { value: 'vandalism', label: t('feed.categories.vandalism'), icon: Hammer },
+        { value: 'suspicious_activity', label: t('feed.categories.suspicious_activity'), icon: Eye },
+        { value: 'fire', label: t('feed.categories.fire'), icon: Flame },
+        { value: 'kidnapping', label: t('feed.categories.kidnapping'), icon: ShieldAlert },
+        { value: 'other', label: t('feed.categories.other'), icon: AlertTriangle },
+    ];
+    const SEVS = [
+        { value: 'low', label: t('feed.severities.low'), desc: t('incident.report.form.severity_desc.low') },
+        { value: 'medium', label: t('feed.severities.medium'), desc: t('incident.report.form.severity_desc.medium') },
+        { value: 'high', label: t('feed.severities.high'), desc: t('incident.report.form.severity_desc.high') },
+        { value: 'critical', label: t('feed.severities.critical'), desc: t('incident.report.form.severity_desc.critical') },
+    ];
+
     const mapTileUrl = theme === 'dark'
         ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
@@ -90,9 +109,9 @@ const EditIncidentPage = () => {
                 setExistingImages(inc.images || []);
             }
         }).catch(err => {
-            setError("Impossible de charger l'incident.");
+            setError(t('incident.edit.error_load'));
         }).finally(() => setLoading(false));
-    }, [id]);
+    }, [id, t]);
 
     const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
 
@@ -114,11 +133,11 @@ const EditIncidentPage = () => {
             });
             if (data.success) navigate('/my-incidents');
         } catch (err) {
-            setError(err.response?.data?.message || 'Erreur lors de la mise à jour.');
+            setError(err.response?.data?.message || t('incident.edit.error_update'));
         } finally { setSaving(false); }
     };
 
-    if (loading) return <div className="page-loader"><div className="spinner" /><p>Chargement...</p></div>;
+    if (loading) return <div className="page-loader"><div className="spinner" /><p>{t('incident.edit.loading')}</p></div>;
 
     const selectedSev = SEVS.find(s => s.value === form.severity);
 
@@ -126,9 +145,9 @@ const EditIncidentPage = () => {
         <div className="page-container fade-in">
             <div className="page-header">
                 <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <Pencil size={28} color="var(--brand-orange)" /> Modifier mon signalement
+                    <Pencil size={28} color="var(--brand-orange)" /> {t('incident.edit.title')}
                 </h1>
-                <p className="page-subtitle">Vous pouvez corriger les détails de votre alerte avant sa validation.</p>
+                <p className="page-subtitle">{t('incident.edit.subtitle')}</p>
             </div>
 
             <div className="card" style={{ maxWidth: 800, margin: '0 auto' }}>
@@ -138,13 +157,18 @@ const EditIncidentPage = () => {
                     </div>}
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
-                            <label className="form-label" htmlFor="title">Titre</label>
+                            <label className="form-label" htmlFor="title">
+                                {t('incident.report.form.title')}
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
+                                    {t('incident.report.form.min_chars_5')} • {form.title.length}/100
+                                </span>
+                            </label>
                             <input className="form-control" type="text" id="title"
-                                value={form.title} onChange={e => set('title', e.target.value)} required />
+                                value={form.title} onChange={e => set('title', e.target.value)} required minLength={5} maxLength={100} />
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Catégorie</label>
+                            <label className="form-label">{t('incident.report.form.category')}</label>
                             <div className="cat-grid">
                                 {CATS.map(cat => {
                                     const Icon = cat.icon;
@@ -162,7 +186,7 @@ const EditIncidentPage = () => {
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Gravité</label>
+                            <label className="form-label">{t('incident.report.form.severity')}</label>
                             <div className="sev-grid">
                                 {SEVS.map(sev => (
                                     <label key={sev.value} className={`sev-option ${sev.value}${form.severity === sev.value ? ' selected' : ''}`}>
@@ -176,14 +200,19 @@ const EditIncidentPage = () => {
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label" htmlFor="description">Description</label>
+                            <label className="form-label" htmlFor="description">
+                                {t('incident.report.form.description')}
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
+                                    {t('incident.report.form.min_chars_20')} • {form.description.length}/2000
+                                </span>
+                            </label>
                             <textarea className="form-control" id="description" rows={4}
-                                value={form.description} onChange={e => set('description', e.target.value)} required />
+                                value={form.description} onChange={e => set('description', e.target.value)} required minLength={20} maxLength={2000} />
                         </div>
 
                         {existingImages.length > 0 && (
                             <div className="form-group">
-                                <label className="form-label">Photos actuelles</label>
+                                <label className="form-label">{t('incident.edit.current_photos')}</label>
                                 <div className="image-previews">
                                     {existingImages.map((img, i) => (
                                         <div key={i} className="image-preview">
@@ -195,9 +224,9 @@ const EditIncidentPage = () => {
                         )}
 
                         <div className="form-group">
-                            <label className="form-label">Ajouter des photos</label>
+                            <label className="form-label">{t('incident.edit.add_photos')}</label>
                             <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
-                                <div className="upload-zone-text">Cliquez pour ajouter</div>
+                                <div className="upload-zone-text">{t('incident.report.form.upload_hint')}</div>
                             </div>
                             <input ref={fileInputRef} type="file" style={{ display: 'none' }}
                                 multiple accept="image/*" onChange={handleImageChange} />
@@ -213,9 +242,9 @@ const EditIncidentPage = () => {
                         </div>
 
                         <div style={{ display: 'flex', gap: 12, marginTop: 32 }}>
-                            <button className="btn btn-secondary" type="button" onClick={() => navigate(-1)}>Annuler</button>
+                            <button className="btn btn-secondary" type="button" onClick={() => navigate(-1)}>{t('incident.edit.cancel')}</button>
                             <button className="btn btn-primary btn-full" type="submit" disabled={saving}>
-                                {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+                                {saving ? t('incident.edit.saving') : t('incident.edit.save')}
                             </button>
                         </div>
                     </form>

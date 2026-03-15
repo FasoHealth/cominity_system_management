@@ -22,27 +22,32 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
+import LanguageSwitcher from './LanguageSwitcher';
 import axios from 'axios';
 
 const NAV_ITEMS = [
-    { to: '/feed', icon: <Newspaper size={20} />, label: "Fil d'actualité" },
-    { to: '/dashboard', icon: <LayoutDashboard size={20} />, label: 'Tableau de bord' },
-    { to: '/map', icon: <MapIcon size={20} />, label: 'Carte des alertes' },
-    { to: '/my-incidents', icon: <Folder size={20} />, label: 'Mes signalements' },
-    { to: '/notifications', icon: <Bell size={20} />, label: 'Notifications' },
-    { to: '/profile', icon: <User size={20} />, label: 'Mon profil' },
+    { to: '/feed', icon: <Newspaper size={20} />, labelKey: 'nav.feed' },
+    { to: '/dashboard', icon: <LayoutDashboard size={20} />, labelKey: 'nav.dashboard' },
+    { to: '/map', icon: <MapIcon size={20} />, labelKey: 'nav.map' },
+    { to: '/my-incidents', icon: <Folder size={20} />, labelKey: 'nav.my_incidents' },
+    { to: '/notifications', icon: <Bell size={20} />, labelKey: 'nav.notifications' },
+    { to: '/profile', icon: <User size={20} />, labelKey: 'nav.profile' },
 ];
 
 const ADMIN_ITEMS = [
-    { to: '/admin', icon: <Shield size={20} />, label: "Vue d'ensemble", end: true },
-    { to: '/admin/incidents', icon: <ClipboardList size={20} />, label: 'Modération' },
-    { to: '/admin/appeals', icon: <UserCheck size={20} />, label: 'Recours Compte' },
-    { to: '/admin/users', icon: <Users size={20} />, label: 'Utilisateurs' },
+    { to: '/admin', icon: <Shield size={20} />, labelKey: 'nav.admin.overview', end: true },
+    { to: '/admin/incidents', icon: <ClipboardList size={20} />, labelKey: 'nav.admin.moderation' },
+    { to: '/admin/appeals', icon: <UserCheck size={20} />, labelKey: 'nav.admin.appeals' },
+    { to: '/admin/users', icon: <Users size={20} />, labelKey: 'nav.admin.users' },
 ];
 
 const Layout = () => {
+    const { t } = useTranslation();
     const { user, logout, isAdmin } = useAuth();
     const { theme, toggleTheme } = useTheme();
+
     const [collapsed, setCollapsed] = useState(false);
     const [unreadNotifs, setUnreadNotifs] = useState(0);
     const navigate = useNavigate();
@@ -89,12 +94,15 @@ const Layout = () => {
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
-    const NavItem = ({ to, icon, label, end = false }) => (
-        <NavLink
-            to={to} end={end}
-            title={collapsed ? label : ''}
-            className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
-        >
+    const NavItem = ({ to, icon, labelKey, end = false }) => {
+        const { t } = useTranslation();
+        const label = t(labelKey);
+        return (
+            <NavLink
+                to={to} end={end}
+                title={collapsed ? label : ''}
+                className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+            >
             <span className="sidebar-link-icon">
                 {icon}
                 {to === '/notifications' && unreadNotifs > 0 && (
@@ -121,7 +129,7 @@ const Layout = () => {
                 </span>
             )}
         </NavLink>
-    );
+    ); };
 
     return (
         <div className="app-layout">
@@ -134,14 +142,15 @@ const Layout = () => {
                     </div>
                     {!collapsed && (
                         <div className="sidebar-logo-text">
-                            Flash<br /><span>Alerte</span>
+                            CS<br /><span>Alert</span>
                         </div>
+
                     )}
                     <button
                         className="sidebar-toggle"
                         onClick={() => setCollapsed(!collapsed)}
                         aria-label="Toggle sidebar"
-                        title={collapsed ? 'Étendre' : 'Réduire'}
+                        title={collapsed ? t('nav.expand') : t('nav.collapse')}
                     >
                         {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                     </button>
@@ -149,41 +158,48 @@ const Layout = () => {
 
                 {/* Navigation */}
                 <nav className="sidebar-nav">
-                    <div className="sidebar-section-title">{collapsed ? '·' : 'Menu Principal'}</div>
+                    <div className="sidebar-section-title">{collapsed ? '·' : t('nav.main_menu')}</div>
                     {NAV_ITEMS.map(item => <NavItem key={item.to} {...item} />)}
 
                     {isAdmin && (
                         <>
                             <div className="sidebar-section-title" style={{ marginTop: 8 }}>
-                                {collapsed ? '·' : 'Administration'}
+                                {collapsed ? '·' : t('nav.admin_section')}
                             </div>
                             {ADMIN_ITEMS.map(item => <NavItem key={item.to} {...item} />)}
                         </>
                     )}
 
                     <div className="sidebar-section-title" style={{ marginTop: 8 }}>
-                        {collapsed ? '·' : 'Préférences'}
+                        {collapsed ? '·' : t('nav.preferences')}
                     </div>
+                    
+                    {!collapsed && (
+                        <div style={{ padding: '0 8px', marginBottom: 8 }}>
+                            <LanguageSwitcher />
+                        </div>
+                    )}
+
                     <button
                         className="sidebar-link"
                         onClick={toggleTheme}
-                        title={collapsed ? (theme === 'light' ? 'Mode sombre' : 'Mode clair') : ''}
+                        title={collapsed ? (theme === 'light' ? t('nav.dark_mode') : t('nav.light_mode')) : ''}
                         style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
                     >
                         <span className="sidebar-link-icon">
                             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                         </span>
-                        {!collapsed && <span className="sidebar-link-text">{theme === 'light' ? 'Mode Sombre' : 'Mode Clair'}</span>}
+                        {!collapsed && <span className="sidebar-link-text">{theme === 'light' ? t('nav.dark_mode') : t('nav.light_mode')}</span>}
                     </button>
 
                     <button
                         className="sidebar-link"
                         onClick={handleLogout}
-                        title={collapsed ? 'Déconnexion' : ''}
+                        title={collapsed ? t('nav.logout') : ''}
                         style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: 'rgba(255,100,100,0.7)' }}
                     >
                         <span className="sidebar-link-icon"><LogOut size={20} /></span>
-                        {!collapsed && <span className="sidebar-link-text">Déconnexion</span>}
+                        {!collapsed && <span className="sidebar-link-text">{t('nav.logout')}</span>}
                     </button>
                 </nav>
 
@@ -191,7 +207,7 @@ const Layout = () => {
                 {!collapsed && (
                     <div style={{ padding: '0 8px 8px' }}>
                         <Link to="/report" className="sidebar-report-btn">
-                            <Zap size={18} fill="currentColor" /> <span>Signaler un incident</span>
+                            <Zap size={18} fill="currentColor" /> <span>{t('nav.report_incident')}</span>
                         </Link>
                     </div>
                 )}
@@ -211,9 +227,9 @@ const Layout = () => {
                                 <div className="sidebar-user-name">{user?.name}</div>
                                 <div className="sidebar-user-role">
                                     {user?.role === 'admin' ? (
-                                        <><Shield size={12} style={{ marginRight: 4 }} /> Admin</>
+                                        <><Shield size={12} style={{ marginRight: 4 }} /> {t('auth.register.admin') || 'Admin'}</>
                                     ) : (
-                                        <><User size={12} style={{ marginRight: 4 }} /> Citoyen</>
+                                        <><User size={12} style={{ marginRight: 4 }} /> {t('auth.register.citizen')}</>
                                     )}
                                 </div>
                             </div>

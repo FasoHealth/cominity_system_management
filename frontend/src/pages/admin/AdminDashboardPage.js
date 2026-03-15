@@ -15,7 +15,10 @@ import {
     Users
 } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+
 const AdminDashboardPage = () => {
+    const { t } = useTranslation();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -40,13 +43,13 @@ const AdminDashboardPage = () => {
         return (
             <div className="page-loader">
                 <div className="spinner"></div>
-                <p>Génération du rapport statistique...</p>
+                <p>{t('admin.dashboard.loading')}</p>
             </div>
         );
     }
 
     const pieData = stats?.byCategory?.map(c => ({
-        name: c._id || 'Autre',
+        name: t(`feed.categories.${c._id}`) || c._id || t('feed.categories.other'),
         value: c.count
     })) || [];
 
@@ -57,16 +60,16 @@ const AdminDashboardPage = () => {
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
                 <div>
                     <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <ShieldCheck size={28} color="var(--brand-orange)" /> Administration
+                        <ShieldCheck size={28} color="var(--brand-orange)" /> {t('admin.dashboard.title')}
                     </h1>
-                    <p className="page-subtitle">Vue d'ensemble de l'activité et des statistiques du système.</p>
+                    <p className="page-subtitle">{t('admin.dashboard.subtitle')}</p>
                 </div>
                 <div style={{
                     background: 'linear-gradient(135deg, var(--brand-navy), var(--brand-navy-light))',
                     color: '#fff', padding: '8px 16px', borderRadius: 8, fontSize: '0.8rem',
                     display: 'flex', alignItems: 'center', gap: 8, boxShadow: 'var(--shadow-sm)'
                 }}>
-                    <Zap size={14} fill="currentColor" /> Mode Administrateur
+                    <Zap size={14} fill="currentColor" /> {t('admin.dashboard.admin_mode')}
                 </div>
             </div>
 
@@ -77,7 +80,7 @@ const AdminDashboardPage = () => {
                     </div>
                     <div className="stat-info">
                         <div className="stat-value" style={{ color: 'var(--brand-orange)' }}>{stats?.incidents?.total}</div>
-                        <div className="stat-label">Total Incidents</div>
+                        <div className="stat-label">{t('admin.dashboard.stats.total')}</div>
                     </div>
                 </a>
                 <a href="/admin/incidents?status=pending" className="stat-card" style={{ textDecoration: 'none' }}>
@@ -86,7 +89,7 @@ const AdminDashboardPage = () => {
                     </div>
                     <div className="stat-info">
                         <div className="stat-value" style={{ color: 'var(--yellow)' }}>{stats?.incidents?.pending}</div>
-                        <div className="stat-label">À Modérer</div>
+                        <div className="stat-label">{t('admin.dashboard.stats.pending')}</div>
                     </div>
                 </a>
                 <div className="stat-card">
@@ -95,7 +98,7 @@ const AdminDashboardPage = () => {
                     </div>
                     <div className="stat-info">
                         <div className="stat-value" style={{ color: 'var(--blue)' }}>{stats?.incidents?.approved}</div>
-                        <div className="stat-label">Approuvés</div>
+                        <div className="stat-label">{t('admin.dashboard.stats.approved')}</div>
                     </div>
                 </div>
                 <div className="stat-card">
@@ -104,7 +107,7 @@ const AdminDashboardPage = () => {
                     </div>
                     <div className="stat-info">
                         <div className="stat-value" style={{ color: 'var(--green)' }}>{stats?.incidents?.resolved}</div>
-                        <div className="stat-label">Cas Résolus</div>
+                        <div className="stat-label">{t('admin.dashboard.stats.resolved')}</div>
                     </div>
                 </div>
                 <a href="/admin/appeals" className="stat-card" style={{ textDecoration: 'none' }}>
@@ -113,9 +116,9 @@ const AdminDashboardPage = () => {
                     </div>
                     <div className="stat-info">
                         <div className="stat-value" style={{ color: 'var(--purple)' }}>
-                            <span style={{ fontSize: '1rem', fontWeight: 700 }}>Gérer</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 700 }}>{t('admin.dashboard.stats.manage')}</span>
                         </div>
-                        <div className="stat-label">Recours Compte</div>
+                        <div className="stat-label">{t('admin.dashboard.stats.appeals')}</div>
                     </div>
                 </a>
             </div>
@@ -123,7 +126,7 @@ const AdminDashboardPage = () => {
             <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '24px' }}>
                 <div className="card" style={{ height: '420px', display: 'flex', flexDirection: 'column', padding: 24 }}>
                     <h3 className="card-title" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <BarChart3 size={20} color="var(--brand-orange)" /> Incidents des 7 derniers jours
+                        <BarChart3 size={20} color="var(--brand-orange)" /> {t('admin.dashboard.charts.daily_title')}
                     </h3>
                     <div style={{ flex: 1 }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -148,7 +151,7 @@ const AdminDashboardPage = () => {
 
                 <div className="card" style={{ height: '420px', display: 'flex', flexDirection: 'column', padding: 24 }}>
                     <h3 className="card-title" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <PieChartIcon size={20} color="var(--brand-orange)" /> Répartition par Catégorie
+                        <PieChartIcon size={20} color="var(--brand-orange)" /> {t('admin.dashboard.charts.category_title')}
                     </h3>
                     <div style={{ flex: 1 }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -179,3 +182,4 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
+

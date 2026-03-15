@@ -4,7 +4,10 @@ import { Link } from 'react-router-dom';
 import { Mail, Zap, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
+import { useTranslation } from 'react-i18next';
+
 const ForgotPasswordPage = () => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -21,7 +24,7 @@ const ForgotPasswordPage = () => {
             setMessage(data.message);
             setSubmitted(true);
         } catch (err) {
-            setError(err.response?.data?.message || 'Une erreur est survenue.');
+            setError(err.response?.data?.message || t('profile.fields.error_save'));
         } finally {
             setLoading(false);
         }
@@ -34,20 +37,21 @@ const ForgotPasswordPage = () => {
                     <div className="auth-left-logo-icon">
                         <Zap size={24} fill="var(--brand-orange)" color="var(--brand-orange)" />
                     </div>
-                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem' }}>Flash Alerte</span>
+                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem' }}>CS Alert</span>
+
                 </div>
             </div>
 
             <div className="auth-right">
                 <div className="auth-form-card fade-in">
                     <Link to="/login" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', marginBottom: 24, fontWeight: 600 }}>
-                        <ChevronLeft size={16} /> Retour à la connexion
+                        <ChevronLeft size={16} /> {t('support.back_to_login')}
                     </Link>
 
                     {!submitted ? (
                         <>
-                            <h1 className="auth-title">Mot de passe oublié ?</h1>
-                            <p className="auth-subtitle">Entrez votre adresse mail pour recevoir un lien de réinitialisation.</p>
+                            <h1 className="auth-title">{t('auth.forgot.title')}</h1>
+                            <p className="auth-subtitle">{t('auth.forgot.subtitle')}</p>
 
                             {error && (
                                 <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -57,7 +61,7 @@ const ForgotPasswordPage = () => {
 
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group">
-                                    <label className="form-label" htmlFor="email">Adresse e-mail</label>
+                                    <label className="form-label" htmlFor="email">{t('auth.login.email')}</label>
                                     <div className="input-group">
                                         <span className="input-icon"><Mail size={18} opacity={0.5} /></span>
                                         <input
@@ -77,7 +81,7 @@ const ForgotPasswordPage = () => {
                                     disabled={loading}
                                     style={{ marginTop: 12 }}
                                 >
-                                    {loading ? <span className="spinner" /> : 'Envoyer le lien'}
+                                    {loading ? <span className="spinner" /> : t('auth.forgot.send_btn')}
                                 </button>
                             </form>
                         </>
@@ -86,12 +90,12 @@ const ForgotPasswordPage = () => {
                             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
                                 <CheckCircle2 size={32} color="#10b981" />
                             </div>
-                            <h1 className="auth-title" style={{ fontSize: '1.5rem', marginBottom: 12 }}>Vérifiez vos emails</h1>
+                            <h1 className="auth-title" style={{ fontSize: '1.5rem', marginBottom: 12 }}>{t('auth.forgot.success_title')}</h1>
                             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 32 }}>
                                 {message}
                             </p>
                             <Link to="/login" className="btn btn-secondary btn-full">
-                                Retour à la connexion
+                                {t('support.back_to_login')}
                             </Link>
                         </div>
                     )}

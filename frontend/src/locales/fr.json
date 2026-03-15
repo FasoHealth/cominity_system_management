@@ -1,0 +1,451 @@
+{
+  "nav": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "dashboard": "Tableau de bord",
+    "feed": "Fil d'actualité",
+    "map": "Carte",
+    "notifications": "Notifications",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "incident": "Incident",
+    "help": "Aide",
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "my_incidents": "Mes signalements",
+    "report_incident": "Signaler un incident",
+    "expand": "Agrandir",
+    "collapse": "Réduire",
+    "main_menu": "MENU PRINCIPAL",
+    "admin_section": "ADMINISTRATION",
+    "preferences": "PRÉFÉRENCES",
+    "dark_mode": "Mode Sombre",
+    "light_mode": "Mode Clair",
+    "admin": {
+      "overview": "Vue d'ensemble",
+      "moderation": "Modération",
+      "appeals": "Recours",
+      "users": "Utilisateurs"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bon retour",
+      "subtitle": "Connectez-vous pour accéder aux alertes locales et interagir avec la communauté.",
+      "email": "Adresse E-mail",
+      "password": "Mot de passe",
+      "forgot_password": "Mot de passe oublié ?",
+      "submit": "Se connecter",
+      "no_account": "Pas encore de compte ?",
+      "create_account": "Créer un compte",
+      "error_invalid_email": "Veuillez entrer une adresse e-mail valide.",
+      "error_login": "Identifiants invalides.",
+      "tagline_1": "Votre sécurité,",
+      "tagline_2": "notre communauté.",
+      "contact_admin": "Contacter un administrateur"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoignez le réseau de sécurité de votre quartier et restez informé.",
+      "name": "Nom complet",
+      "email": "Adresse E-mail",
+      "password": "Mot de passe",
+      "confirm_password": "Confirmer le mot de passe",
+      "submit": "Démarrer l'aventure",
+      "have_account": "Vous avez déjà un compte ?",
+      "login_now": "Se connecter",
+      "tagline_1": "Plus forts",
+      "tagline_2": "ensemble.",
+      "error_signup": "Erreur lors de l'inscription.",
+      "error_mismatch": "Les mots de passe ne correspondent pas.",
+      "error_invalid_email": "Veuillez entrer une adresse e-mail valide.",
+      "error_register": "Échec de l'inscription.",
+      "full_name": "Nom complet",
+      "phone": "Numéro de téléphone",
+      "optional": "(optionnel)",
+      "role": "Rôle",
+      "placeholders": {
+        "name": "Jean Dupont",
+        "phone": "07 00 00 00 00",
+        "email": "votre@email.com"
+      },
+
+
+
+      "citizen": "Citoyen",
+      "admin": "Administrateur",
+      "creating": "Création du compte...",
+      "already_registered": "Déjà inscrit ?",
+      "sign_in": "Connectez-vous",
+      "min_chars": "8 caractères min. + 1 chiffre"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié ?",
+      "subtitle": "Entrez votre adresse mail pour recevoir un lien de réinitialisation.",
+      "send_btn": "Envoyer le lien",
+      "success_title": "Vérifiez vos emails"
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "subtitle": "Définissez votre nouveau mot de passe sécurisé.",
+      "submit": "Réinitialiser le mot de passe",
+      "success_title": "Succès !",
+      "success_desc": "Votre mot de passe a été mis à jour. Vous allez être redirigé vers la page de connexion.",
+      "login_btn": "Se connecter maintenant"
+    },
+    "roles": {
+      "admin": "Administrateur",
+      "citizen": "Citoyen"
+    }
+  },
+  "chat": {
+    "official_title": "Conversation Officielle",
+    "support_role": "Support Citoyen",
+    "admin_discussion": "Discussion avec l'Administration",
+    "empty_title": "Aucun message",
+    "empty_admin": "Démarrez la conversation pour aider le citoyen.",
+    "empty_citizen": "L'administration pourra vous contacter ici pour plus d'informations.",
+    "placeholder": "Répondre..."
+  },
+  "dashboard": {
+    "greeting": "Bonjour, {{name}}",
+    "subtitle": "Restez informé de ce qui se passe autour de vous.",
+    "stats": {
+      "total": "Total alertes",
+      "approved": "Visibles",
+      "pending": "En attente",
+      "resolved": "Résolues"
+    },
+    "chart": {
+      "title": "Activité récente",
+      "empty": "Aucune donnée disponible pour le graphique."
+    },
+    "recent": {
+      "title": "Derniers signalements",
+      "view_all": "Voir tout",
+      "incident": "Incident",
+      "category": "Catégorie",
+      "date": "Date",
+      "status": "Statut",
+      "empty_title": "Aucun signalement",
+      "empty_desc": "Vous n'avez pas encore signalé d'incident.",
+      "report_now": "Signaler maintenant"
+    },
+    "actions": {
+      "title": "Actions Rapides",
+      "new": "Signaler un Incident",
+      "notifications": "Mes Notifications",
+      "map": "Carte interactive",
+      "feed": "Fil d'actualité"
+    },
+    "tip": {
+      "title": "Conseil de sécurité",
+      "desc": "La communauté valide vos signalements. Plus vous êtes précis, plus l'impact est grand pour votre quartier.",
+      "resolution_rate": "Taux de résolution"
+    }
+  },
+  "feed": {
+    "title": "Fil d'actualité",
+    "subtitle": "Alertes de sécurité en temps réel partagées par la communauté.",
+    "search_placeholder": "Rechercher un incident, un lieu...",
+    "categories_label": "Catégories",
+    "severities_label": "Niveaux de gravité",
+    "filter_btn": "Filtres",
+    "reset_filters": "Réinitialiser",
+    "loading": "Chargement des alertes...",
+    "no_incidents": "Aucun incident trouvé.",
+    "categories": {
+      "all": "Toutes les catégories",
+      "theft": "Vol",
+      "assault": "Sécurité",
+      "vandalism": "Vandalisme",
+      "suspicious_activity": "Suspect",
+      "fire": "Incendie",
+      "kidnapping": "Enlèvement",
+      "other": "Autre"
+    },
+    "severities": {
+      "all": "Toutes les gravités",
+      "low": "Faible",
+      "medium": "Moyen",
+      "high": "Élevé",
+      "critical": "Critique"
+    },
+    "status": {
+      "pending": "En attente",
+      "approved": "Confirmé",
+      "resolved": "Résolu",
+      "rejected": "Rejeté"
+    },
+    "time": {
+      "now": "À l'instant",
+      "min": "Il y a {{count}} min",
+      "hour": "Il y a {{count}}h",
+      "day": "Il y a {{count}}j"
+    },
+    "confirmations": {
+        "title": "Confirmations",
+        "upvotes": "confirmé par {{count}} personnes",
+        "be_first": "Soyez le premier à confirmer"
+    },
+    "verified_badge": "Vérifié"
+
+  },
+  "incident": {
+    "detail": {
+      "loading": "Chargement des détails...",
+      "error": "Incident introuvable ou erreur de chargement.",
+      "back_to_feed": "Retour au flux",
+      "reported_on": "Signalé le",
+      "anonymous": "Utilisateur anonyme",
+      "mark_resolved": "Marquer comme résolu",
+      "confirm_resolve": "Voulez-vous vraiment marquer cet incident comme résolu ?",
+      "security_tips": "Conseils de sécurité",
+      "quick_reaction": "Réaction rapide",
+      "reaction_desc": "Gardez une distance de sécurité et prévenez les autorités si nécessaire.",
+      "live_discussion": "Discussion en direct",
+      "no_messages": "Aucun message pour l'instant.",
+      "type_message": "Tapez votre message...",
+      "send": "Envoyer"
+    },
+    "report": {
+      "title": "Signaler un incident",
+      "subtitle": "Aidez la communauté en signalant un problème de sécurité localement.",
+      "geo_not_supported": "Géolocalisation non supportée.",
+      "geo_address_error": "Position récupérée, mais adresse introuvable automatiquement.",
+      "geo_denied": "Localisation refusée.",
+      "geo_failed": "Impossible de vous localiser.",
+      "error_submit": "Erreur lors du signalement.",
+      "form": {
+        "title": "Titre du signalement",
+        "title_placeholder": "Ex: Incendie au marché central, Vol de moto...",
+        "min_chars_5": "(Min. 5)",
+        "category": "Catégorie",
+        "severity": "Niveau de gravité",
+        "severity_desc": {
+          "low": "Peu urgent",
+          "medium": "Modéré",
+          "high": "Urgent",
+          "critical": "Extrême"
+        },
+        "description": "Description détaillée",
+        "description_placeholder": "Décrivez l'incident en détail : que s'est-il passé, les personnes impliquées, l'heure approximative...",
+        "min_chars_20": "(Min. 20)",
+        "location": "Localisation",
+        "my_position": "Ma position GPS",
+        "address_placeholder": "Adresse ou point de repère",
+        "city_placeholder": "Ville",
+        "photos": "Photos (optionnel)",
+        "max_4": "Max 4 photos",
+        "upload_hint": "Cliquez pour ajouter des photos",
+        "upload_limits": "JPG, PNG, WEBP • Max 5 Mo chacune",
+        "anonymous": "Signaler anonymement",
+        "anonymous_hint": "Votre identité ne sera pas visible dans le signalement public.",
+        "submit": "Soumettre le signalement",
+        "submitting": "Envoi en cours..."
+      },
+      "summary": {
+        "title": "RÉCAPITULATIF",
+        "civic_reminder": {
+          "title": "Rappel civique",
+          "desc": "Tout signalement abusif peut entraîner des sanctions. La précision géographique permet une intervention plus rapide."
+        },
+        "fast_validation": {
+          "title": "Validation rapide",
+          "desc": "Si d'autres citoyens signalent le même incident à proximité, il sera priorisé par nos services de modération."
+        }
+      }
+    },
+    "edit": {
+      "title": "Modifier mon signalement",
+      "subtitle": "Vous pouvez corriger les détails de votre alerte avant sa validation.",
+      "error_load": "Impossible de charger l'incident.",
+      "error_update": "Erreur lors de la mise à jour.",
+      "loading": "Chargement...",
+      "current_photos": "Photos actuelles",
+      "add_photos": "Ajouter des photos",
+      "cancel": "Annuler",
+      "save": "Enregistrer les modifications",
+      "saving": "Enregistrement..."
+    }
+  },
+  "map": {
+    "loading": "Chargement de la carte interactive...",
+    "in_your_zone": "Dans votre zone",
+    "alerts_count_one": "1 alerte",
+    "alerts_count_other": "{{count}} alertes",
+    "radius_label": "Rayon de proximité",
+    "km": "km",
+    "search_placeholder": "Rechercher un quartier, une rue...",
+    "user_popup": "Vous êtes ici",
+    "details_btn": "Détails",
+    "report_cta": "SIGNALER UN INCIDENT",
+    "legend_gravity": "Gravité"
+  },
+  "profile": {
+    "title": "Paramètres du profil",
+    "subtitle": "Gérez vos informations et préférences de contact.",
+    "roles": {
+      "admin": "Administrateur",
+      "citizen": "Citoyen"
+    },
+    "logout": "Déconnexion",
+    "stats": {
+      "alerts": "Alertes",
+      "impact": "Impact"
+    },
+    "saved_success": "Modifications enregistrées",
+    "fields": {
+      "name": "Nom complet",
+      "phone": "Numéro de téléphone",
+      "phone_placeholder": "+226 XX XX XX XX",
+      "email_hint": "E-mail (non modifiable)",
+      "city": "Ville de résidence",
+      "city_placeholder": "Ouagadougou",
+      "save_btn": "Sauvegarder mon profil",
+      "loading": "Chargement...",
+      "error_save": "Erreur lors de la sauvegarde."
+    },
+    "notifications": {
+      "title": "Préférences de notification",
+      "radius_label": "Rayon de surveillance actif",
+      "radius_local": "Locale (1km)",
+      "radius_regional": "Régionale (50km)",
+      "pref_fire": "Incendies et Feux de brousse",
+      "pref_flood": "Inondations et Crues",
+      "pref_civil": "Manifestations et Troubles"
+    },
+    "history": {
+      "title": "Mes derniers signalements"
+    }
+  },
+  "notif": {
+    "title": "Notifications",
+    "subtitle": "Restez informé de l'évolution de vos signalements.",
+    "mark_all_read": "Tout marquer comme lu",
+    "loading": "Chargement des notifications...",
+    "new_badge": "Nouveau",
+    "empty_title": "Tout est calme",
+    "empty_desc": "Vous n'avez aucune notification récente. Signalez des incidents pour rester informé de l'activité dans votre quartier !"
+  },
+  "support": {
+    "title": "Envoyer un recours",
+    "subtitle": "Votre compte est désactivé ? Expliquez-nous pourquoi il devrait être réactivé.",
+    "email": "Email du compte",
+    "message": "Message",
+    "submit": "Envoyer la demande",
+    "check_status": "Vérifier l'état",
+    "check_hint": "Saisissez votre email pour voir si un administrateur vous a répondu.",
+    "verify": "Vérifier",
+    "no_appeals": "Entrez votre email ci-dessus",
+    "not_found": "Aucune demande trouvée pour cet email.",
+    "pending": "En attente",
+    "replied": "Répondu",
+    "admin": "Admin",
+    "back_to_login": "Retour à la connexion"
+  },
+  "my_incidents": {
+    "title": "Mes Signalements",
+    "subtitle": "Suivez le statut de toutes vos alertes envoyées.",
+    "new_btn": "Nouveau signalement",
+    "loading": "Chargement de vos signalements...",
+    "stats": {
+      "total": "Total"
+    },
+    "table": {
+      "incident": "Incident",
+      "category": "Catégorie",
+      "location": "Lieu",
+      "date": "Date",
+      "status": "Statut",
+      "details": "Détails",
+      "edit": "Modif"
+    },
+    "empty_filter": "Aucun signalement dans cette catégorie",
+    "empty_title": "Aucun signalement envoyé",
+    "empty_filter_desc": "Essayez un autre filtre.",
+    "empty_desc": "Vous n'avez pas encore signalé d'incident.",
+    "empty_btn": "Signaler maintenant"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Administration",
+      "subtitle": "Vue d'ensemble de l'activité et des statistiques du système.",
+      "admin_mode": "Mode Administrateur",
+      "loading": "Génération du rapport statistique...",
+      "stats": {
+        "total": "Total Incidents",
+        "pending": "À Modérer",
+        "approved": "Approuvés",
+        "resolved": "Cas Résolus",
+        "manage": "Gérer",
+        "appeals": "Recours Compte"
+      },
+      "charts": {
+        "daily_title": "Incidents des 7 derniers jours",
+        "category_title": "Répartition par Catégorie"
+      }
+    },
+    "incidents": {
+      "title": "Modération",
+      "incidents_count": "incidents",
+      "search_placeholder": "Rechercher...",
+      "refresh": "Actualiser",
+      "loading": "Chargement des dossiers...",
+      "community_validated": "VALIDÉ PAR LA COMMUNAUTÉ",
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "mark_resolved": "Marquer Résolu",
+      "details": "Détails",
+      "empty_title": "Tout est traité !",
+      "empty_desc": "Aucun signalement à modérer dans cet onglet.",
+      "error_notify": "Erreur de notification.",
+      "votes": "{{count}} votes"
+    },
+    "users": {
+        "title": "Utilisateurs",
+        "total_hint": "{{count}} au total",
+        "search_placeholder": "Rechercher...",
+        "new_btn": "Nouvel Utilisateur",
+        "loading": "Chargement de l'annuaire...",
+        "table": {
+            "user": "UTILISATEUR",
+            "email": "EMAIL",
+            "role": "RÔLE",
+            "status": "STATUT",
+            "date": "INSCRIT LE",
+            "reports": "SIGNALEMENTS"
+        },
+        "roles": {
+            "admin": "Admin",
+            "moderator": "Modérateur",
+            "citizen": "Citoyen"
+        },
+        "stats": {
+            "active": "Comptes Actifs",
+            "banned": "Bannis / Inactifs",
+            "new_month": "Nouveaux ce mois"
+        },
+        "pagination_hint": "Affichage de {{start}}-{{end}} sur {{total}}"
+    },
+    "appeals": {
+        "title": "Recours de compte",
+        "subtitle": "Gérez les demandes de réactivation des utilisateurs bannis.",
+        "empty_title": "Aucune demande en attente",
+        "empty_desc": "Tout semble en ordre ! Revenez plus tard.",
+        "user_msg": "Message de l'utilisateur :",
+        "admin_reply": "Réponse admin",
+        "reactivate": "Réactiver le compte",
+        "reply": "Répondre",
+        "edit_reply": "Modifier la réponse",
+        "replied": "RÉPONDU",
+        "resolved": "RÉSOLU",
+        "confirm_reactivate": "Voulez-vous vraiment réactiver le compte de {{name}} ?",
+        "reactivate_msg": "Votre compte a été réactivé. Vous pouvez vous connecter.",
+        "reactivate_success": "Compte réactivé avec succès !",
+        "unknown_user": "Utilisateur inconnu",
+        "reply_placeholder": "Tapez votre réponse pour l'utilisateur..."
+    }
+  }
+}
+

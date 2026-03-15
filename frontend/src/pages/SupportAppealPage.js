@@ -10,8 +10,13 @@ import {
     Clock
 } from 'lucide-react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+
 
 const SupportAppealPage = () => {
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -24,8 +29,16 @@ const SupportAppealPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setStatus({ type: '', text: '' });
+
+        // Validation de l'email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setStatus({ type: 'error', text: t('auth.email_invalid') });
+            return;
+        }
+
+        setLoading(true);
 
         try {
             const { data } = await axios.post('/api/support/appeal', { email, message });
@@ -37,7 +50,7 @@ const SupportAppealPage = () => {
         } catch (err) {
             setStatus({ 
                 type: 'error', 
-                text: err.response?.data?.message || 'Une erreur est survenue lors de l\'envoi.' 
+                text: err.response?.data?.message || t('profile.fields.error_save') 
             });
         } finally {
             setLoading(false);
@@ -54,7 +67,7 @@ const SupportAppealPage = () => {
                 setAppeals(data.appeals);
             }
         } catch (err) {
-            alert('Erreur lors de la vérification.');
+            alert(t('profile.fields.error_save'));
         } finally {
             setChecking(false);
         }
@@ -67,11 +80,14 @@ const SupportAppealPage = () => {
                 {/* Section Formulaire */}
                 <div className="card">
                     <div style={{ padding: 24 }}>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <ShieldAlert size={22} color="var(--brand-orange)" /> Envoyer un Recours
-                        </h2>
+                        <div style={{ position: 'relative' }}>
+                            <LanguageSwitcher />
+                            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <ShieldAlert size={22} color="var(--brand-orange)" /> {t('support.title')}
+                            </h2>
+                        </div>
                         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, fontSize: '0.85rem' }}>
-                            Votre compte est désactivé ? Expliquez-nous pourquoi il devrait être réactivé.
+                            {t('support.subtitle')}
                         </p>
 
                         {status.text && (
@@ -83,7 +99,7 @@ const SupportAppealPage = () => {
 
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label className="form-label">Email du compte</label>
+                                <label className="form-label">{t('support.email')}</label>
                                 <input 
                                     className="form-control" type="email" 
                                     placeholder="votre@email.com" value={email} 
@@ -91,15 +107,21 @@ const SupportAppealPage = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label className="form-label">Message</label>
+                                <label className="form-label">
+                                    {t('support.message')}
+                                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
+                                        {message.length}/2000
+                                    </span>
+                                </label>
                                 <textarea 
                                     className="form-control" rows="4" 
-                                    placeholder="Détails de votre demande..." 
+                                    placeholder={t('support.message') + "..."} 
                                     value={message} onChange={e => setMessage(e.target.value)} required
+                                    maxLength={2000}
                                 />
                             </div>
                             <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
-                                {loading ? 'Envoi...' : 'Envoyer la demande'}
+                                {loading ? '...' : t('support.submit')}
                             </button>
                         </form>
                     </div>
@@ -109,21 +131,21 @@ const SupportAppealPage = () => {
                 <div className="card" style={{ background: 'var(--bg-primary)' }}>
                     <div style={{ padding: 24 }}>
                         <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <Search size={22} color="var(--brand-orange)" /> Vérifier l'état
+                            <Search size={22} color="var(--brand-orange)" /> {t('support.check_status')}
                         </h2>
                         <p style={{ color: 'var(--text-secondary)', marginBottom: 20, fontSize: '0.85rem' }}>
-                            Saisissez votre email pour voir si un administrateur vous a répondu.
+                            {t('support.check_hint')}
                         </p>
 
                         <form onSubmit={handleCheckStatus} style={{ marginBottom: 20 }}>
                             <div className="input-group-custom" style={{ display: 'flex', gap: 8 }}>
                                 <input 
                                     className="form-control" type="email" 
-                                    placeholder="Votre email" value={checkEmail} 
+                                    placeholder={t('support.email')} value={checkEmail} 
                                     onChange={e => setCheckEmail(e.target.value)} required 
                                 />
                                 <button className="btn btn-secondary" type="submit" disabled={checking}>
-                                    {checking ? '...' : 'Vérifier'}
+                                    {checking ? '...' : t('support.verify')}
                                 </button>
                             </div>
                         </form>
@@ -132,12 +154,12 @@ const SupportAppealPage = () => {
                             {!appeals ? (
                                 <div style={{ textAlign: 'center', marginTop: 40, opacity: 0.5 }}>
                                     <Search size={32} style={{ marginBottom: 8 }} />
-                                    <p style={{ fontSize: '0.8rem' }}>Entrez votre email ci-dessus</p>
+                                    <p style={{ fontSize: '0.8rem' }}>{t('support.no_appeals')}</p>
                                 </div>
                             ) : appeals.length === 0 ? (
                                 <div style={{ textAlign: 'center', marginTop: 40, color: 'var(--red)' }}>
                                     <AlertCircle size={32} style={{ marginBottom: 8 }} />
-                                    <p style={{ fontSize: '0.8rem' }}>Aucune demande trouvée pour cet email.</p>
+                                    <p style={{ fontSize: '0.8rem' }}>{t('support.not_found')}</p>
                                 </div>
                             ) : (
                                 appeals.map((a, i) => (
@@ -154,15 +176,15 @@ const SupportAppealPage = () => {
                                                 background: a.status === 'pending' ? 'var(--yellow-bg)' : 'var(--green-bg)',
                                                 color: a.status === 'pending' ? 'var(--yellow)' : 'var(--green)'
                                             }}>
-                                                {a.status === 'pending' ? 'En attente' : 'Répondu'}
+                                                {a.status === 'pending' ? t('support.pending') : t('support.replied')}
                                             </span>
                                         </div>
-                                        <p style={{ fontSize: '0.8rem', margin: 0, opacity: 0.8 }}><strong>Demande:</strong> {a.message.substring(0, 50)}...</p>
+                                        <p style={{ fontSize: '0.8rem', margin: 0, opacity: 0.8 }}><strong>{t('support.message')}:</strong> {a.message.substring(0, 50)}...</p>
                                         {a.adminReply && (
                                             <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed var(--border)', display: 'flex', gap: 8 }}>
                                                 <MessageSquare size={14} color="var(--brand-orange)" style={{ flexShrink: 0, marginTop: 2 }} />
                                                 <p style={{ fontSize: '0.8rem', margin: 0, color: 'var(--brand-orange)' }}>
-                                                    <strong>Admin:</strong> {a.adminReply}
+                                                    <strong>{t('support.admin')}:</strong> {a.adminReply}
                                                 </p>
                                             </div>
                                         )}
@@ -177,11 +199,12 @@ const SupportAppealPage = () => {
             
             <div style={{ marginTop: 24, textAlign: 'center' }}>
                 <Link to="/login" style={{ color: 'var(--brand-orange)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <ArrowLeft size={18} /> Retour à la connexion
+                    <ArrowLeft size={18} /> {t('support.back_to_login')}
                 </Link>
             </div>
         </div>
     );
 };
+;
 
 export default SupportAppealPage;

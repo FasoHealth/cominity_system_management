@@ -1,0 +1,448 @@
+{
+  "nav": {
+    "login": "Login",
+    "register": "Registration",
+    "dashboard": "Dashboard",
+    "feed": "Feed",
+    "map": "Map",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "logout": "Logout",
+    "incident": "Incident",
+    "help": "Help",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "my_incidents": "My Reports",
+    "report_incident": "Report an incident",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "main_menu": "MAIN MENU",
+    "admin_section": "ADMINISTRATION",
+    "preferences": "PREFERENCES",
+    "dark_mode": "Dark Mode",
+    "light_mode": "Light Mode",
+    "admin": {
+      "overview": "Overview",
+      "moderation": "Moderation",
+      "appeals": "Appeals",
+      "users": "Users"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Login to access local alerts and interact with the community.",
+      "email": "Email Address",
+      "password": "Password",
+      "forgot_password": "Forgot Password?",
+      "submit": "Log In",
+      "no_account": "Don't have an account?",
+      "create_account": "Create an account",
+      "error_invalid_email": "Please enter a valid email address.",
+      "error_login": "Invalid credentials.",
+      "tagline_1": "Your safety,",
+      "tagline_2": "our community.",
+      "contact_admin": "Contact an administrator"
+    },
+    "register": {
+      "title": "Create an Account",
+      "subtitle": "Join the safety network of your neighborhood and stay informed.",
+      "name": "Full Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirm_password": "Confirm password",
+      "submit": "Join the Community",
+      "have_account": "Already have an account?",
+      "login_now": "Log in",
+      "tagline_1": "Stronger",
+      "tagline_2": "together.",
+      "error_signup": "An error occurred during registration.",
+      "error_mismatch": "Passwords do not match.",
+      "error_invalid_email": "Please enter a valid email address.",
+      "error_register": "Registration failed.",
+      "full_name": "Full Name",
+      "phone": "Phone Number",
+      "optional": "(optional)",
+      "role": "Role",
+      "placeholders": {
+        "name": "John Doe",
+        "phone": "07 00 00 00 00",
+        "email": "your@email.com"
+      },
+
+      "citizen": "Citizen",
+      "admin": "Administrator",
+      "creating": "Creating account...",
+      "already_registered": "Already registered?",
+      "sign_in": "Log in",
+      "min_chars": "8 chars min. + 1 number"
+    },
+    "forgot": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email address to receive a reset link.",
+      "send_btn": "Send Link",
+      "success_title": "Check your emails"
+    },
+    "reset": {
+      "title": "New Password",
+      "subtitle": "Set your new secure password.",
+      "submit": "Reset Password",
+      "success_title": "Success!",
+      "success_desc": "Your password has been updated. You will be redirected to the login page.",
+      "login_btn": "Log in now"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "citizen": "Citizen"
+    }
+  },
+  "chat": {
+    "official_title": "Official Conversation",
+    "support_role": "Citizen Support",
+    "admin_discussion": "Discussion with Admin",
+    "empty_title": "No messages",
+    "empty_admin": "Start the conversation to help the citizen.",
+    "empty_citizen": "Admin will contact you here for more info.",
+    "placeholder": "Reply..."
+  },
+  "dashboard": {
+    "greeting": "Hello, {{name}}",
+    "subtitle": "Stay informed about what's happening around you.",
+    "stats": {
+      "total": "Total alerts",
+      "approved": "Visible",
+      "pending": "Pending",
+      "resolved": "Resolved"
+    },
+    "chart": {
+      "title": "Recent Activity",
+      "empty": "No data available for the chart."
+    },
+    "recent": {
+      "title": "Latest Reports",
+      "view_all": "View all",
+      "incident": "Incident",
+      "category": "Category",
+      "date": "Date",
+      "status": "Status",
+      "empty_title": "No reports",
+      "empty_desc": "You haven't reported any incidents yet.",
+      "report_now": "Report now"
+    },
+    "actions": {
+      "title": "Quick Actions",
+      "new": "Report an Incident",
+      "notifications": "My Notifications",
+      "map": "Interactive Map",
+      "feed": "News Feed"
+    },
+    "tip": {
+      "title": "Safety Tip",
+      "desc": "The community validates your reports. The more precise you are, the greater the impact for your neighborhood.",
+      "resolution_rate": "Resolution Rate"
+    }
+  },
+  "feed": {
+    "title": "News Feed",
+    "subtitle": "Real-time security alerts shared by the community.",
+    "search_placeholder": "Search for an incident, a place...",
+    "categories_label": "Categories",
+    "severities_label": "Severities",
+    "filter_btn": "Filters",
+    "reset_filters": "Reset",
+    "loading": "Loading incidents...",
+    "no_incidents": "No incidents found.",
+    "categories": {
+      "all": "All Categories",
+      "theft": "Theft",
+      "assault": "Security",
+      "vandalism": "Vandalism",
+      "suspicious_activity": "Suspicious Activity",
+      "fire": "Fire",
+      "kidnapping": "Kidnapping",
+      "other": "Other"
+    },
+    "severities": {
+      "all": "All Severities",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "resolved": "Resolved",
+      "rejected": "Rejected"
+    },
+    "time": {
+      "now": "Just now",
+      "min": "{{count}} min ago",
+      "hour": "{{count}}h ago",
+      "day": "{{count}}d ago"
+    },
+    "confirmations": {
+        "title": "Confirmations",
+        "upvotes": "confirmed by {{count}} people",
+        "be_first": "Be the first to confirm"
+    }
+  },
+  "incident": {
+    "detail": {
+      "loading": "Loading incident details...",
+      "error": "Incident not found or error loading.",
+      "back_to_feed": "Back to feed",
+      "reported_on": "Reported on",
+      "anonymous": "Anonymous user",
+      "mark_resolved": "Mark as resolved",
+      "confirm_resolve": "Are you sure you want to mark this incident as resolved?",
+      "security_tips": "Security Tips",
+      "quick_reaction": "Quick Reaction",
+      "reaction_desc": "Keep a safe distance and alert local authorities if necessary.",
+      "live_discussion": "Live Discussion",
+      "no_messages": "No messages yet.",
+      "type_message": "Type your message...",
+      "send": "Send"
+    },
+    "report": {
+      "title": "Report an Incident",
+      "subtitle": "Help the community by reporting a local security issue.",
+      "geo_not_supported": "Geolocation not supported.",
+      "geo_address_error": "Position retrieved, but address not found automatically.",
+      "geo_denied": "Location denied.",
+      "geo_failed": "Unable to locate you.",
+      "error_submit": "Error during reporting.",
+      "form": {
+        "title": "Report Title",
+        "title_placeholder": "e.g., Fire at central market, Motorcycle theft...",
+        "min_chars_5": "(Min. 5)",
+        "category": "Category",
+        "severity": "Severity Level",
+        "severity_desc": {
+          "low": "Not urgent",
+          "medium": "Moderate",
+          "high": "Urgent",
+          "critical": "Extreme"
+        },
+        "description": "Detailed Description",
+        "description_placeholder": "Describe the incident in detail: what happened, involved people, approximate time...",
+        "min_chars_20": "(Min. 20)",
+        "location": "Location",
+        "my_position": "My GPS Position",
+        "address_placeholder": "Address or landmark",
+        "city_placeholder": "City",
+        "photos": "Photos (optional)",
+        "max_4": "Max 4 photos",
+        "upload_hint": "Click to add photos",
+        "upload_limits": "JPG, PNG, WEBP • Max 5 MB each",
+        "anonymous": "Report anonymously",
+        "anonymous_hint": "Your identity will not be visible in the public report.",
+        "submit": "Submit Report",
+        "submitting": "Submitting..."
+      },
+      "summary": {
+        "title": "SUMMARY",
+        "civic_reminder": {
+          "title": "Civic Reminder",
+          "desc": "Any abusive reporting can lead to sanctions. Geographical precision allows for faster intervention."
+        },
+        "fast_validation": {
+          "title": "Fast Validation",
+          "desc": "If other citizens report the same incident nearby, it will be prioritized by our moderation services."
+        }
+      }
+    },
+    "edit": {
+      "title": "Modify my report",
+      "subtitle": "You can correct your alert details before validation.",
+      "error_load": "Unable to load incident.",
+      "error_update": "Error during update.",
+      "loading": "Loading...",
+      "current_photos": "Current photos",
+      "add_photos": "Add photos",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving..."
+    }
+  },
+  "map": {
+    "loading": "Loading interactive map...",
+    "in_your_zone": "In your area",
+    "alerts_count_one": "1 alert",
+    "alerts_count_other": "{{count}} alerts",
+    "radius_label": "Proximity radius",
+    "km": "km",
+    "search_placeholder": "Search for a neighborhood, a street...",
+    "user_popup": "You are here",
+    "details_btn": "Details",
+    "report_cta": "REPORT AN INCIDENT",
+    "legend_gravity": "Severity"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "subtitle": "Manage your information and contact preferences.",
+    "roles": {
+      "admin": "Administrator",
+      "citizen": "Citizen"
+    },
+    "logout": "Logout",
+    "stats": {
+      "alerts": "Alerts",
+      "impact": "Impact"
+    },
+    "saved_success": "Changes saved",
+    "fields": {
+      "name": "Full Name",
+      "phone": "Phone Number",
+      "phone_placeholder": "+226 XX XX XX XX",
+      "email_hint": "Email (cannot be changed)",
+      "city": "City of residence",
+      "city_placeholder": "Ouagadougou",
+      "save_btn": "Save my profile",
+      "loading": "Loading...",
+      "error_save": "Error during saving."
+    },
+    "notifications": {
+      "title": "Notification Preferences",
+      "radius_label": "Active monitoring radius",
+      "radius_local": "Local (1km)",
+      "radius_regional": "Regional (50km)",
+      "pref_fire": "Fires and Bushfires",
+      "pref_flood": "Floods and Risings",
+      "pref_civil": "Protests and Troubles"
+    },
+    "history": {
+      "title": "My latest reports"
+    }
+  },
+  "notif": {
+    "title": "Notifications",
+    "subtitle": "Stay informed about the evolution of your reports.",
+    "mark_all_read": "Mark all as read",
+    "loading": "Loading notifications...",
+    "new_badge": "New",
+    "empty_title": "All is quiet",
+    "empty_desc": "You have no recent notifications. Report incidents to stay informed of activity in your neighborhood!"
+  },
+  "support": {
+    "title": "Send an Appeal",
+    "subtitle": "Is your account disabled? Explain why it should be reactivated.",
+    "email": "Account Email",
+    "message": "Message",
+    "submit": "Send Appeal",
+    "check_status": "Check status",
+    "check_hint": "Enter your email to see if an administrator has replied.",
+    "verify": "Verify",
+    "no_appeals": "Enter your email above",
+    "not_found": "No appeal found for this email.",
+    "pending": "Pending",
+    "replied": "Replied",
+    "admin": "Admin",
+    "back_to_login": "Back to login"
+  },
+  "my_incidents": {
+    "title": "My Reports",
+    "subtitle": "Track the status of all your sent alerts.",
+    "new_btn": "New Report",
+    "loading": "Loading your reports...",
+    "stats": {
+      "total": "Total"
+    },
+    "table": {
+      "incident": "Incident",
+      "category": "Category",
+      "location": "Location",
+      "date": "Date",
+      "status": "Status",
+      "details": "Details",
+      "edit": "Edit"
+    },
+    "empty_filter": "No reports in this category",
+    "empty_title": "No reports sent",
+    "empty_filter_desc": "Try another filter.",
+    "empty_desc": "You haven't reported any incidents yet.",
+    "empty_btn": "Report now"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Administration",
+      "subtitle": "Overview of activity and system statistics.",
+      "admin_mode": "Administrator Mode",
+      "loading": "Generating statistical report...",
+      "stats": {
+        "total": "Total Incidents",
+        "pending": "To Moderate",
+        "approved": "Approved",
+        "resolved": "Cases Resolved",
+        "manage": "Manage",
+        "appeals": "Account Appeals"
+      },
+      "charts": {
+        "daily_title": "Incidents in the last 7 days",
+        "category_title": "Distribution by Category"
+      }
+    },
+    "incidents": {
+      "title": "Moderation",
+      "incidents_count": "incidents",
+      "search_placeholder": "Search...",
+      "refresh": "Refresh",
+      "loading": "Loading cases...",
+      "community_validated": "COMMUNITY VALIDATED",
+      "approve": "Approve",
+      "reject": "Reject",
+      "mark_resolved": "Mark Resolved",
+      "details": "Details",
+      "empty_title": "Everything is processed!",
+      "empty_desc": "No reports to moderate in this tab.",
+      "error_notify": "Notification error.",
+      "votes_one": "1 vote",
+      "votes_other": "{{count}} votes"
+    },
+    "users": {
+        "title": "Users",
+        "total_hint": "{{count}} in total",
+        "search_placeholder": "Search...",
+        "new_btn": "New User",
+        "loading": "Loading directory...",
+        "table": {
+            "user": "USER",
+            "email": "EMAIL",
+            "role": "ROLE",
+            "status": "STATUS",
+            "date": "JOINED ON",
+            "reports": "REPORTS"
+        },
+        "roles": {
+            "admin": "Admin",
+            "moderator": "Moderator",
+            "citizen": "Citizen"
+        },
+        "stats": {
+            "active": "Active Accounts",
+            "banned": "Banned / Inactive",
+            "new_month": "New this month"
+        },
+        "pagination_hint": "Showing {{start}}-{{end}} of {{total}}"
+    },
+    "appeals": {
+        "title": "Account Appeals",
+        "subtitle": "Manage reactivation requests from banned users.",
+        "empty_title": "No pending requests",
+        "empty_desc": "Everything looks fine! Check back later.",
+        "user_msg": "User Message:",
+        "admin_reply": "Admin Reply",
+        "reactivate": "Reactivate Account",
+        "reply": "Reply",
+        "edit_reply": "Edit Reply",
+        "replied": "REPLIED",
+        "resolved": "RESOLVED",
+        "confirm_reactivate": "Are you sure you want to reactivate the account of {{name}}?",
+        "reactivate_msg": "Your account has been reactivated. You can now log in.",
+        "reactivate_success": "Account reactivated successfully!",
+        "unknown_user": "Unknown user",
+        "reply_placeholder": "Type your reply for the user..."
+    }
+  }
+}
+

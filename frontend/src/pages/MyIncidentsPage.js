@@ -21,43 +21,65 @@ import {
     AlertTriangle
 } from 'lucide-react';
 
-const CAT_LABELS = { theft: 'Vol', assault: 'Agression', vandalism: 'Vandalisme', suspicious_activity: 'Suspect', fire: 'Incendie', kidnapping: 'Enlèvement', other: 'Autre' };
-
-const CATEGORY_ICONS = {
-    theft: ShieldAlert,
-    assault: ShieldAlert,
-    vandalism: Hammer,
-    suspicious_activity: Eye,
-    fire: Flame,
-    kidnapping: ShieldAlert,
-    other: AlertTriangle
-};
-
-const SEV_LABELS = { low: 'Faible', medium: 'Moyen', high: 'Élevé', critical: 'Critique' };
-const STATUS_LABELS = { pending: 'En attente', approved: 'Approuvé', resolved: 'Résolu', rejected: 'Rejeté' };
-
-const STATUS_FILTERS = [
-    { value: '', label: 'Tous', icon: null },
-    { value: 'pending', label: 'En attente', icon: <Clock size={14} /> },
-    { value: 'approved', label: 'Approuvés', icon: <CheckCircle2 size={14} /> },
-    { value: 'resolved', label: 'Résolus', icon: <Trophy size={14} /> },
-    { value: 'rejected', label: 'Rejetés', icon: <XCircle size={14} /> },
-];
-
-function timeAgo(date) {
-    const sec = Math.floor((Date.now() - new Date(date)) / 1000);
-    if (sec < 60) return "À l'instant";
-    const min = Math.floor(sec / 60);
-    if (min < 60) return `Il y a ${min} min`;
-    const h = Math.floor(min / 60);
-    if (h < 24) return `Il y a ${h}h`;
-    return new Date(date).toLocaleDateString('fr-FR');
-}
+import { useTranslation } from 'react-i18next';
 
 const MyIncidentsPage = () => {
+    const { t } = useTranslation();
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('');
+
+    const CAT_LABELS = { 
+        theft: t('feed.categories.theft'), 
+        assault: t('feed.categories.assault'), 
+        vandalism: t('feed.categories.vandalism'), 
+        suspicious_activity: t('feed.categories.suspicious_activity'), 
+        fire: t('feed.categories.fire'), 
+        kidnapping: t('feed.categories.kidnapping'), 
+        other: t('feed.categories.other') 
+    };
+
+    const CATEGORY_ICONS = {
+        theft: ShieldAlert,
+        assault: ShieldAlert,
+        vandalism: Hammer,
+        suspicious_activity: Eye,
+        fire: Flame,
+        kidnapping: ShieldAlert,
+        other: AlertTriangle
+    };
+
+    const SEV_LABELS = { 
+        low: t('feed.severity.low'), 
+        medium: t('feed.severity.medium'), 
+        high: t('feed.severity.high'), 
+        critical: t('feed.severity.critical') 
+    };
+    
+    const STATUS_LABELS = { 
+        pending: t('feed.status.pending'), 
+        approved: t('feed.status.approved'), 
+        resolved: t('feed.status.resolved'), 
+        rejected: t('feed.status.rejected') 
+    };
+
+    const STATUS_FILTERS = [
+        { value: '', label: t('feed.filters.all'), icon: null },
+        { value: 'pending', label: t('feed.status.pending'), icon: <Clock size={14} /> },
+        { value: 'approved', label: t('feed.status.approved'), icon: <CheckCircle2 size={14} /> },
+        { value: 'resolved', label: t('feed.status.resolved'), icon: <Trophy size={14} /> },
+        { value: 'rejected', label: t('feed.status.rejected'), icon: <XCircle size={14} /> },
+    ];
+
+    function timeAgo(date) {
+        const sec = Math.floor((Date.now() - new Date(date)) / 1000);
+        if (sec < 60) return t('feed.time.now');
+        const min = Math.floor(sec / 60);
+        if (min < 60) return t('feed.time.min', { count: min });
+        const h = Math.floor(min / 60);
+        if (h < 24) return t('feed.time.hour', { count: h });
+        return new Date(date).toLocaleDateString();
+    }
 
     useEffect(() => {
         axios.get('/api/incidents/my').then(({ data }) => {
@@ -73,12 +95,12 @@ const MyIncidentsPage = () => {
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                     <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <Folder size={28} color="var(--brand-orange)" /> Mes Signalements
+                        <Folder size={28} color="var(--brand-orange)" /> {t('my_incidents.title')}
                     </h1>
-                    <p className="page-subtitle">Suivez le statut de toutes vos alertes envoyées.</p>
+                    <p className="page-subtitle">{t('my_incidents.subtitle')}</p>
                 </div>
                 <Link to="/report" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Zap size={18} /> Nouveau signalement
+                    <Zap size={18} /> {t('my_incidents.new_btn')}
                 </Link>
             </div>
 
@@ -86,10 +108,10 @@ const MyIncidentsPage = () => {
             {!loading && incidents.length > 0 && (
                 <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
                     {[
-                        { label: 'Total', value: incidents.length, color: 'var(--brand-orange)', bg: 'rgba(232,84,26,0.1)' },
-                        { label: 'Approuvés', value: incidents.filter(i => i.status === 'approved').length, color: 'var(--green)', bg: 'var(--green-bg)' },
-                        { label: 'En attente', value: incidents.filter(i => i.status === 'pending').length, color: 'var(--yellow)', bg: 'var(--yellow-bg)' },
-                        { label: 'Résolus', value: incidents.filter(i => i.status === 'resolved').length, color: 'var(--blue)', bg: 'var(--blue-bg)' },
+                        { label: t('my_incidents.stats.total'), value: incidents.length, color: 'var(--brand-orange)', bg: 'rgba(232,84,26,0.1)' },
+                        { label: t('feed.status.approved'), value: incidents.filter(i => i.status === 'approved').length, color: 'var(--green)', bg: 'var(--green-bg)' },
+                        { label: t('feed.status.pending'), value: incidents.filter(i => i.status === 'pending').length, color: 'var(--yellow)', bg: 'var(--yellow-bg)' },
+                        { label: t('feed.status.resolved'), value: incidents.filter(i => i.status === 'resolved').length, color: 'var(--blue)', bg: 'var(--blue-bg)' },
                     ].map(s => (
                         <div key={s.label} style={{
                             background: s.bg, border: `1px solid ${s.color}33`,
@@ -115,18 +137,18 @@ const MyIncidentsPage = () => {
             </div>
 
             {loading ? (
-                <div className="page-loader"><div className="spinner" /><p>Chargement de vos signalements...</p></div>
+                <div className="page-loader"><div className="spinner" /><p>{t('my_incidents.loading')}</p></div>
             ) : filtered.length > 0 ? (
                 <div className="card">
                     <div className="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Incident</th>
-                                    <th>Catégorie</th>
-                                    <th>Lieu</th>
-                                    <th>Date</th>
-                                    <th>Statut</th>
+                                    <th>{t('my_incidents.table.incident')}</th>
+                                    <th>{t('my_incidents.table.category')}</th>
+                                    <th>{t('my_incidents.table.location')}</th>
+                                    <th>{t('my_incidents.table.date')}</th>
+                                    <th>{t('my_incidents.table.status')}</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -167,10 +189,10 @@ const MyIncidentsPage = () => {
                                             <td><span className={`badge badge-${inc.status}`}>{STATUS_LABELS[inc.status] || inc.status}</span></td>
                                             <td onClick={e => e.stopPropagation()}>
                                                 <div style={{ display: 'flex', gap: 6 }}>
-                                                    <Link to={`/incidents/${inc._id}`} className="btn btn-sm btn-ghost">Détails</Link>
+                                                    <Link to={`/incidents/${inc._id}`} className="btn btn-sm btn-ghost">{t('my_incidents.table.details')}</Link>
                                                     {inc.status === 'pending' && (
                                                         <Link to={`/incidents/edit/${inc._id}`} className="btn btn-sm btn-secondary" style={{ padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                            <Edit3 size={14} /> Modif
+                                                            <Edit3 size={14} /> {t('my_incidents.table.edit')}
                                                         </Link>
                                                     )}
                                                 </div>
@@ -188,14 +210,14 @@ const MyIncidentsPage = () => {
                         <Folder size={48} opacity={0.2} />
                     </div>
                     <p className="empty-state-title">
-                        {statusFilter ? 'Aucun signalement dans cette catégorie' : 'Aucun signalement envoyé'}
+                        {statusFilter ? t('my_incidents.empty_filter') : t('my_incidents.empty_title')}
                     </p>
                     <p className="empty-state-desc">
-                        {statusFilter ? 'Essayez un autre filtre.' : "Vous n'avez pas encore signalé d'incident."}
+                        {statusFilter ? t('my_incidents.empty_filter_desc') : t('my_incidents.empty_desc')}
                     </p>
                     {!statusFilter && (
                         <Link to="/report" className="btn btn-primary" style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Zap size={18} /> Signaler maintenant
+                            <Zap size={18} /> {t('my_incidents.empty_btn')}
                         </Link>
                     )}
                 </div>
@@ -204,4 +226,6 @@ const MyIncidentsPage = () => {
     );
 };
 
+
 export default MyIncidentsPage;
+

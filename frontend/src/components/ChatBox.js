@@ -12,7 +12,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+import { useTranslation } from 'react-i18next';
+
 const ChatBox = ({ incidentId }) => {
+    const { t } = useTranslation();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
@@ -89,8 +92,8 @@ const ChatBox = ({ incidentId }) => {
                     <MessageSquare size={18} />
                 </div>
                 <div className="chat-info">
-                    <h3>Conversation Officielle</h3>
-                    <p>{user.role === 'admin' ? 'Support Citoyen' : 'Discussion avec l\'Administration'}</p>
+                    <h3>{t('chat.official_title')}</h3>
+                    <p>{user.role === 'admin' ? t('chat.support_role') : t('chat.admin_discussion')}</p>
                 </div>
             </div>
 
@@ -100,10 +103,10 @@ const ChatBox = ({ incidentId }) => {
                         <div className="welcome-icon">
                             <Inbox size={48} opacity={0.2} />
                         </div>
-                        <h4>Aucun message</h4>
+                        <h4>{t('chat.empty_title')}</h4>
                         <p>{user.role === 'admin' 
-                            ? 'Démarrez la conversation pour aider le citoyen.' 
-                            : 'L\'administration pourra vous contacter ici pour plus d\'informations.'}
+                            ? t('chat.empty_admin') 
+                            : t('chat.empty_citizen')}
                         </p>
                     </div>
                 ) : (
@@ -138,7 +141,7 @@ const ChatBox = ({ incidentId }) => {
                     </button>
                     <input
                         type="text"
-                        placeholder="Répondre..."
+                        placeholder={t('chat.placeholder')}
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         autoComplete="off"

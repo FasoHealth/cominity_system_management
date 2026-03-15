@@ -15,8 +15,12 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const RegisterPage = () => {
+    const { t } = useTranslation();
     const [form, setForm] = useState({
         name: '', email: '', phone: '', password: '', confirmPassword: '',
         isAnonymous: false, role: 'citizen'
@@ -34,12 +38,26 @@ const RegisterPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+
+        // Validation du nom
+        if (form.name.trim().length < 2) {
+            setError(t('auth.register.error_name_short'));
+            return;
+        }
+
+        // Validation de l'email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form.email)) {
+            setError(t('auth.register.error_invalid_email'));
+            return;
+        }
+
         if (form.password.length < 8 || !/\d/.test(form.password)) {
-            setError('Le mot de passe doit contenir au moins 8 caractères et au moins un chiffre.');
+            setError(t('auth.register.error_password_requirement'));
             return;
         }
         if (form.password !== form.confirmPassword) {
-            setError('Les mots de passe ne correspondent pas.');
+            setError(t('auth.register.error_password_mismatch'));
             return;
         }
         setLoading(true);
@@ -55,7 +73,7 @@ const RegisterPage = () => {
             if (err.response?.data?.errors) {
                 setError(err.response.data.errors.map(e => e.message).join('. '));
             } else {
-                setError(err.response?.data?.message || "Erreur lors de l'inscription.");
+                setError(err.response?.data?.message || t('auth.register.error_signup','Erreur lors de l\'inscription.'));
             }
         } finally {
             setLoading(false);
@@ -70,7 +88,8 @@ const RegisterPage = () => {
                     <div className="auth-left-logo-icon">
                         <Zap size={24} fill="var(--brand-orange)" color="var(--brand-orange)" />
                     </div>
-                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>Flash Alerte</span>
+                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>CS Alert</span>
+
                 </div>
 
                 <div className="auth-left-art">
@@ -78,14 +97,17 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="auth-left-tagline" style={{ color: '#222' }}>
+                    {t('auth.login.tagline_1','Votre sécurité,')}<br />
+                    <span style={{ color: '#222', opacity: 0.7 }}>{t('auth.login.tagline_2','notre communauté.')}</span>
                 </div>
             </div>
 
             {/* ── Panneau droit ── */}
             <div className="auth-right">
                 <div className="auth-form-card fade-in" style={{ maxWidth: 520 }}>
-                    <h1 className="auth-title" style={{ color: '#222' }}>Créer un compte</h1>
-                    <p className="auth-subtitle" style={{ color: '#666' }}>Rejoignez des milliers de citoyens qui protègent leur quartier.</p>
+                    <LanguageSwitcher />
+                    <h1 className="auth-title" style={{ color: '#222' }}>{t('auth.register.title')}</h1>
+                    <p className="auth-subtitle" style={{ color: '#666' }}>{t('auth.register.subtitle')}</p>
 
                     {error && (
                         <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -96,38 +118,46 @@ const RegisterPage = () => {
                     <form onSubmit={handleSubmit}>
                         <div className="form-row">
                             <div className="form-group">
-                                <label className="form-label" htmlFor="name" style={{ color: '#222' }}>Nom complet</label>
+                                <label className="form-label" htmlFor="name" style={{ color: '#222' }}>
+                                    {t('auth.register.full_name')}
+                                    <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
+                                        (Min. 2) • {form.name.length}/50
+                                    </span>
+                                </label>
                                 <div className="input-group">
                                     <span className="input-icon"><User size={18} opacity={0.5} /></span>
                                     <input className="form-control" type="text" id="name" name="name"
-                                        placeholder="Jean Dupont" value={form.name}
-                                        onChange={handleChange} required />
+                                        placeholder={t('auth.register.placeholders.name')} value={form.name}
+                                        onChange={handleChange} required minLength={2} maxLength={50} />
+
                                 </div>
                             </div>
                             <div className="form-group">
-                                <label className="form-label" htmlFor="phone" style={{ color: '#222' }}>Téléphone <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem' }}>(optionnel)</span></label>
+                                <label className="form-label" htmlFor="phone" style={{ color: '#222' }}>{t('auth.register.phone')} <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem' }}>{t('auth.register.optional')}</span></label>
                                 <div className="input-group">
                                     <span className="input-icon"><Phone size={18} opacity={0.5} /></span>
                                     <input className="form-control" type="tel" id="phone" name="phone"
-                                        placeholder="07 00 00 00 00" value={form.phone}
+                                        placeholder={t('auth.register.placeholders.phone')} value={form.phone}
                                         onChange={handleChange} />
+
                                 </div>
                             </div>
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label" htmlFor="email" style={{ color: '#222' }}>Adresse e-mail</label>
+                            <label className="form-label" htmlFor="email" style={{ color: '#222' }}>{t('auth.register.email')}</label>
                             <div className="input-group">
                                 <span className="input-icon"><Mail size={18} opacity={0.5} /></span>
                                 <input className="form-control" type="email" id="email" name="email"
-                                    placeholder="votre@email.com" value={form.email}
+                                    placeholder={t('auth.register.placeholders.email')} value={form.email}
                                     onChange={handleChange} required />
+
                             </div>
                         </div>
 
                         <div className="form-row">
                             <div className="form-group">
-                                <label className="form-label" htmlFor="password" style={{ color: '#222' }}>Mot de passe</label>
+                                <label className="form-label" htmlFor="password" style={{ color: '#222' }}>{t('auth.register.password')}</label>
                                 <div className="input-group">
                                     <span className="input-icon"><Lock size={18} opacity={0.5} /></span>
                                     <input className="form-control" type="password" id="password" name="password"
@@ -135,11 +165,11 @@ const RegisterPage = () => {
                                         onChange={handleChange} required minLength={8} />
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
-                                    8 caractères min., dont 1 chiffre.
+                                    {t('auth.register.min_chars')}
                                 </div>
                             </div>
                             <div className="form-group">
-                                <label className="form-label" htmlFor="confirmPassword" style={{ color: '#222' }}>Confirmer</label>
+                                <label className="form-label" htmlFor="confirmPassword" style={{ color: '#222' }}>{t('auth.register.confirm_password')}</label>
                                 <div className="input-group">
                                     <span className="input-icon"><Lock size={18} opacity={0.5} /></span>
                                     <input className="form-control" type="password" id="confirmPassword" name="confirmPassword"
@@ -151,7 +181,7 @@ const RegisterPage = () => {
 
                         {/* Rôle */}
                         <div className="form-group">
-                            <label className="form-label" style={{ color: '#222' }}>Vous êtes</label>
+                            <label className="form-label" style={{ color: '#222' }}>{t('auth.register.role')}</label>
                             <div style={{ display: 'flex', gap: 10 }}>
                                 <label style={{
                                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -165,30 +195,30 @@ const RegisterPage = () => {
                                     <input type="radio" name="role" value="citizen"
                                         checked={form.role === 'citizen'} onChange={handleChange}
                                         style={{ display: 'none' }} />
-                                    <User size={18} /> Citoyen
+                                    <User size={18} /> {t('auth.register.citizen')}
                                 </label>
                             </div>
                         </div>
 
                         <button className="btn btn-primary btn-full btn-lg" type="submit" disabled={loading} style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                             {loading ? (
-                                <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Création en cours...</>
+                                <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> {t('auth.register.creating')}</>
                             ) : (
-                                <>Créer mon compte <ArrowRight size={18} /></>
+                                <>{t('auth.register.submit')} <ArrowRight size={18} /></>
                             )}
                         </button>
                     </form>
 
                     <div style={{ textAlign: 'center', marginTop: 24, fontSize: '0.875rem', color: '#666' }}>
-                        Déjà inscrit ?{' '}
-                        <Link to="/login" style={{ color: 'var(--brand-orange)', fontWeight: 700 }}>Se connecter</Link>
+                        {t('auth.register.already_registered')}{' '}
+                        <Link to="/login" style={{ color: 'var(--brand-orange)', fontWeight: 700 }}>{t('auth.register.sign_in')}</Link>
                     </div>
                 </div>
 
                 <div className="auth-footer-links">
-                    <a href="#aide">Aide</a>
-                    <a href="#confidentialite">Confidentialité</a>
-                    <a href="#conditions">Conditions</a>
+                    <a href="#aide">{t('nav.help')}</a>
+                    <a href="#confidentialite">{t('nav.privacy')}</a>
+                    <a href="#conditions">{t('nav.terms')}</a>
                 </div>
             </div>
         </div>

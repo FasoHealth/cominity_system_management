@@ -21,11 +21,14 @@ import {
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
+import { useTranslation } from 'react-i18next';
+
 function initials(name = '') {
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
 const ProfilePage = () => {
+    const { t } = useTranslation();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
@@ -96,7 +99,7 @@ const ProfilePage = () => {
                 setTimeout(() => setSaved(false), 3000);
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Erreur lors de la sauvegarde.');
+            setError(err.response?.data?.message || t('profile.fields.error_save'));
         } finally {
             setSaving(false);
         }
@@ -104,7 +107,12 @@ const ProfilePage = () => {
 
     const handleLogout = () => { logout(); navigate('/login'); };
 
-    const STATUS_LABELS = { pending: 'En attente', approved: 'Confirmé', resolved: 'Clôturé', rejected: 'Rejeté' };
+    const STATUS_LABELS = { 
+        pending: t('feed.status.pending'), 
+        approved: t('feed.status.approved'), 
+        resolved: t('feed.status.resolved'), 
+        rejected: t('feed.status.rejected') 
+    };
     const STATUS_COLORS = { pending: '#FACC15', approved: '#22C55E', resolved: '#3B82F6', rejected: '#EF4444' };
 
     return (
@@ -142,7 +150,7 @@ const ProfilePage = () => {
                                     border: '1px solid var(--border)', display: 'flex', alignItems: 'center',
                                     justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                 }}
-                                title="Modifier la photo"
+                                title={t('edit.add_photos')}
                             >
                                 <Camera size={18} />
                             </button>
@@ -154,12 +162,12 @@ const ProfilePage = () => {
                             fontSize: '0.85rem', color: 'var(--brand-orange)', fontWeight: 700, 
                             textTransform: 'uppercase', marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 
                         }}>
-                            {user?.role === 'admin' ? <><Shield size={14} /> Administrateur</> : <><User size={14} /> Citoyen</>}
+                            {user?.role === 'admin' ? <><Shield size={14} /> {t('profile.roles.admin')}</> : <><User size={14} /> {t('profile.roles.citizen')}</>}
                         </p>
                         
                         <div style={{ padding: '0 10px' }}>
                             <button className="btn btn-ghost btn-full btn-sm" style={{ color: 'var(--red)', marginBottom: 8 }} onClick={handleLogout}>
-                                <LogOut size={16} style={{ marginRight: 8 }} /> Déconnexion
+                                <LogOut size={16} style={{ marginRight: 8 }} /> {t('profile.logout')}
                             </button>
                         </div>
                     </div>
@@ -167,14 +175,14 @@ const ProfilePage = () => {
                     <div className="grid-2" style={{ gap: 12 }}>
                         <div className="stat-card-compact card" style={{ padding: 16 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Alertes</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('profile.stats.alerts')}</div>
                                 <Activity size={14} color="var(--brand-orange)" opacity={0.6} />
                             </div>
                             <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{stats.incidents}</div>
                         </div>
                         <div className="stat-card-compact card" style={{ padding: 16 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Impact</div>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('profile.stats.impact')}</div>
                                 <TrendingUp size={14} color="var(--brand-orange)" opacity={0.6} />
                             </div>
                             <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{stats.upvotes}</div>
@@ -190,13 +198,13 @@ const ProfilePage = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
                             <div>
                                 <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <Settings size={20} color="var(--brand-orange)" /> Paramètres du profil
+                                    <Settings size={20} color="var(--brand-orange)" /> {t('profile.title')}
                                 </h3>
-                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>Gérez vos informations et préférences de contact.</p>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>{t('profile.subtitle')}</p>
                             </div>
                             {saved && (
                                 <span className="fade-in" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'var(--green-bg)', color: 'var(--green)', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700 }}>
-                                    <CheckCircle size={14} /> Modifications enregistrées
+                                    <CheckCircle size={14} /> {t('profile.saved_success')}
                                 </span>
                             )}
                         </div>
@@ -204,7 +212,7 @@ const ProfilePage = () => {
                         <form onSubmit={handleSave}>
                             <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
                                 <div className="form-group">
-                                    <label className="form-label">Nom complet</label>
+                                    <label className="form-label">{t('profile.fields.name')}</label>
                                     <input 
                                         className="form-control" 
                                         value={form.name} 
@@ -212,32 +220,32 @@ const ProfilePage = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Numéro de téléphone</label>
+                                    <label className="form-label">{t('profile.fields.phone')}</label>
                                     <input 
                                         className="form-control" 
                                         value={form.phone} 
                                         onChange={e => setForm({...form, phone: e.target.value})} 
-                                        placeholder="+226 XX XX XX XX" 
+                                        placeholder={t('profile.fields.phone_placeholder')}
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">E-mail (non modifiable)</label>
+                                    <label className="form-label">{t('profile.fields.email_hint')}</label>
                                     <input className="form-control" value={user?.email} disabled style={{ background: 'var(--bg-primary)', cursor: 'not-allowed' }} />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Ville de résidence</label>
+                                    <label className="form-label">{t('profile.fields.city')}</label>
                                     <input 
                                         className="form-control" 
                                         value={form.city} 
                                         onChange={e => setForm({...form, city: e.target.value})} 
-                                        placeholder="Ouagadougou" 
+                                        placeholder={t('profile.fields.city_placeholder')} 
                                     />
                                 </div>
                             </div>
                             
                             <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: 20 }}>
                                 <button className="btn btn-primary" type="submit" disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    {saving ? 'Chargement...' : <><Zap size={18} fill="currentColor" /> Sauvegarder mon profil</>}
+                                    {saving ? t('profile.fields.loading') : <><Zap size={18} fill="currentColor" /> {t('profile.fields.save_btn')}</>}
                                 </button>
                             </div>
                         </form>
@@ -246,12 +254,12 @@ const ProfilePage = () => {
                     {/* Alerts Preferences */}
                     <div className="card" style={{ padding: 30 }}>
                         <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <Radio size={20} color="var(--brand-orange)" /> Préférences de notification
+                            <Radio size={20} color="var(--brand-orange)" /> {t('profile.notifications.title')}
                         </h3>
                         
                         <div style={{ background: 'var(--bg-primary)', padding: 20, borderRadius: 'var(--radius-md)', marginBottom: 24 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                                <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Rayon de surveillance actif</span>
+                                <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{t('profile.notifications.radius_label')}</span>
                                 <span style={{ color: 'var(--brand-orange)', fontWeight: 800 }}>{alertRadius} km</span>
                             </div>
                             <input 
@@ -260,16 +268,16 @@ const ProfilePage = () => {
                                 style={{ width: '100%', accentColor: 'var(--brand-orange)' }}
                             />
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 8 }}>
-                                <span>Locale (1km)</span>
-                                <span>Régionale (50km)</span>
+                                <span>{t('profile.notifications.radius_local')}</span>
+                                <span>{t('profile.notifications.radius_regional')}</span>
                             </div>
                         </div>
 
                         <div className="pref-list">
                             {[
-                                { key: 'fire', icon: <Flame size={20} color="#EF4444" />, label: 'Incendies et Feux de brousse' },
-                                { key: 'flood', icon: <Waves size={20} color="#3B82F6" />, label: 'Inondations et Crues' },
-                                { key: 'civil', icon: <Megaphone size={20} color="#F59E0B" />, label: 'Manifestations et Troubles' },
+                                { key: 'fire', icon: <Flame size={20} color="#EF4444" />, label: t('profile.notifications.pref_fire') },
+                                { key: 'flood', icon: <Waves size={20} color="#3B82F6" />, label: t('profile.notifications.pref_flood') },
+                                { key: 'civil', icon: <Megaphone size={20} color="#F59E0B" />, label: t('profile.notifications.pref_civil') },
                             ].map(pref => (
                                 <div key={pref.key} style={{ 
                                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
@@ -296,7 +304,7 @@ const ProfilePage = () => {
                     {history.length > 0 && (
                         <div className="card" style={{ padding: 30 }}>
                             <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <FileText size={20} color="var(--brand-orange)" /> Mes derniers signalements
+                                <FileText size={20} color="var(--brand-orange)" /> {t('profile.history.title')}
                             </h3>
                             <div className="history-list" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 {history.map(inc => (
@@ -336,10 +344,11 @@ const ProfilePage = () => {
                 .profile-banner { transition: height 0.3s; }
                 .card { transition: transform 0.2s; }
                 .form-control:focus { border-color: var(--brand-orange); box-shadow: 0 0 0 3px rgba(232,84,26,0.1); }
-                .avatar-edit-btn:hover { background: var(--brand-orange) !important; color: white !important; }
             `}</style>
         </div>
     );
 };
 
+
 export default ProfilePage;
+

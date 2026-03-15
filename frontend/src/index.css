@@ -1,7 +1,8 @@
 /* ====================================================================
-   Flash Alerte — Design System
+   CS Alert — Design System
    Palette: Navy Blue + Orange + Cream
    ==================================================================== */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -2190,3 +2191,54 @@ tbody tr {
 .green-bg {
   background: var(--green-bg);
 }
+
+/* ── Language Switcher Floating ── */
+.lang-switcher-floating {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--brand-orange);
+    border-radius: 30px;
+    padding: 3px;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.lang-switcher-floating:hover {
+    transform: translateY(2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 25px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.lang-btn.active {
+    background: var(--brand-orange);
+    color: white;
+    box-shadow: 0 2px 8px rgba(232,84,26,0.3);
+}
+
+.lang-btn:not(.active):hover {
+    background: var(--brand-orange-pale);
+    color: var(--brand-orange);
+}
+
+.lang-flag {
+    font-size: 1rem;
+}
+

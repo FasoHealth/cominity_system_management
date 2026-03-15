@@ -1,5 +1,6 @@
 // frontend/src/pages/IncidentFeedPage.js
 import React, { useState, useEffect } from 'react';
+import i18n from '../i18n';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
@@ -24,34 +25,50 @@ import {
     Ghost
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-const CAT_LABELS = { theft: 'Vol', assault: 'Agression', vandalism: 'Vandalisme', suspicious_activity: 'Suspect', fire: 'Incendie', kidnapping: 'Enlèvement', other: 'Autre' };
-
-const CATEGORY_ICONS = {
-    theft: ShieldAlert,
-    assault: ShieldAlert,
-    vandalism: Hammer,
-    suspicious_activity: Eye,
-    fire: Flame,
-    kidnapping: Ghost,
-    other: AlertTriangle
-};
-
-const SEV_LABELS = { low: 'Faible', medium: 'Moyen', high: 'Élevé', critical: 'Critique' };
-
-const timeAgo = (date) => {
-    const sec = Math.floor((Date.now() - new Date(date)) / 1000);
-    if (sec < 60) return "À l'instant";
-    const min = Math.floor(sec / 60);
-    if (min < 60) return `Il y a ${min} min`;
-    const h = Math.floor(min / 60);
-    if (h < 24) return `Il y a ${h}h`;
-    return new Date(date).toLocaleDateString('fr-FR');
-};
+import { useTranslation } from 'react-i18next';
 
 const IncidentFeedPage = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const [incidents, setIncidents] = useState([]);
+
+    const CAT_LABELS = { 
+        theft: t('feed.categories.theft'), 
+        assault: t('feed.categories.assault'), 
+        vandalism: t('feed.categories.vandalism'), 
+        suspicious_activity: t('feed.categories.suspicious_activity'), 
+        fire: t('feed.categories.fire'), 
+        kidnapping: t('feed.categories.kidnapping'), 
+        other: t('feed.categories.other') 
+    };
+
+    const SEV_LABELS = { 
+        low: t('feed.severities.low'), 
+        medium: t('feed.severities.medium'), 
+        high: t('feed.severities.high'), 
+        critical: t('feed.severities.critical') 
+    };
+
+    const CATEGORY_ICONS = {
+        theft: ShieldAlert,
+        assault: ShieldAlert,
+        vandalism: Hammer,
+        suspicious_activity: Eye,
+        fire: Flame,
+        kidnapping: Ghost,
+        other: AlertTriangle
+    };
+
+    const timeAgo = (date) => {
+        const sec = Math.floor((Date.now() - new Date(date)) / 1000);
+        if (sec < 60) return t('feed.time.now');
+        const min = Math.floor(sec / 60);
+        if (min < 60) return t('feed.time.min', { count: min });
+        const h = Math.floor(min / 60);
+        if (h < 24) return t('feed.time.hour', { count: h });
+        return new Date(date).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US');
+    };
+
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('');
@@ -99,8 +116,8 @@ const IncidentFeedPage = () => {
                         <Layout size={24} color="var(--brand-orange)" />
                     </div>
                     <div>
-                        <h1 className="page-title" style={{ margin: 0 }}>Fil d'Actualité</h1>
-                        <p className="page-subtitle" style={{ margin: 0 }}>Dernières alertes communautaires</p>
+                        <h1 className="page-title" style={{ margin: 0 }}>{t('feed.title')}</h1>
+                        <p className="page-subtitle" style={{ margin: 0 }}>{t('feed.subtitle')}</p>
                     </div>
                 </div>
                 
@@ -109,7 +126,7 @@ const IncidentFeedPage = () => {
                         <span className="input-icon"><Search size={18} opacity={0.6} /></span>
                         <input 
                             type="text" className="form-control" 
-                            placeholder="Rechercher par titre, description, lieu..." 
+                            placeholder={t('feed.search_placeholder')} 
                             value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
                         />
                     </div>
@@ -118,7 +135,7 @@ const IncidentFeedPage = () => {
                             className="form-control" style={{ width: 160 }}
                             value={category} onChange={e => { setCategory(e.target.value); setPage(1); }}
                         >
-                            <option value="">Toutes catégories</option>
+                            <option value="">{t('feed.categories.all')}</option>
                             {Object.entries(CAT_LABELS).map(([val, lab]) => (
                                 <option key={val} value={val}>{lab}</option>
                             ))}
@@ -127,7 +144,8 @@ const IncidentFeedPage = () => {
                             className="form-control" style={{ width: 160 }}
                             value={severity} onChange={e => { setSeverity(e.target.value); setPage(1); }}
                         >
-                            <option value="">Toutes gravités</option>
+                            <option value="">{t('feed.severities.all')}</option>
+
                             {Object.entries(SEV_LABELS).map(([val, lab]) => (
                                 <option key={val} value={val}>{lab}</option>
                             ))}
@@ -137,7 +155,7 @@ const IncidentFeedPage = () => {
             </div>
 
             {loading ? (
-                <div className="page-loader"><div className="spinner" /><p>Chargement des alertes...</p></div>
+                <div className="page-loader"><div className="spinner" /><p>{t('feed.loading')}</p></div>
             ) : incidents.length > 0 ? (
                 <>
                     <div className="grid-3" style={{ gap: 24 }}>
@@ -186,7 +204,7 @@ const IncidentFeedPage = () => {
                                                     padding: '4px 8px',
                                                     boxShadow: '0 2px 4px rgba(232,84,26,0.2)'
                                                 }}>
-                                                    EN ATTENTE
+                                                    {t('feed.pending_badge')}
                                                 </span>
                                             )}
                                         </div>
@@ -234,11 +252,11 @@ const IncidentFeedPage = () => {
                                         </div>
                                         {inc.status === 'approved' ? (
                                             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, color: '#10B981', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', borderTop: '1px solid rgba(16,185,129,0.1)', paddingTop: 8 }}>
-                                                <ShieldCheck size={12} /> Officiellement Vérifié
+                                                <ShieldCheck size={12} /> {t('feed.verified_badge')}
                                             </div>
                                         ) : (
                                             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand-orange)', fontSize: '0.65rem', fontWeight: 700 }}>
-                                                <Zap size={12} fill="var(--brand-orange)" /> {inc.upvotes?.length || 0}/5 confirmations
+                                                <Zap size={12} fill="var(--brand-orange)" /> {t('feed.confirmations', { count: inc.upvotes?.length || 0 })}
                                                 <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden', marginLeft: 8 }}>
                                                     <div style={{ width: `${Math.min((inc.upvotes?.length || 0) * 20, 100)}%`, height: '100%', background: 'var(--brand-orange)' }} />
                                                 </div>
@@ -277,15 +295,15 @@ const IncidentFeedPage = () => {
                     <div className="empty-state-icon" style={{ marginBottom: 20 }}>
                         <FileText size={64} opacity={0.1} />
                     </div>
-                    <h3 className="empty-state-title">Aucun incident trouvé</h3>
-                    <p className="empty-state-desc" style={{ color: 'var(--text-muted)' }}>Essayez de modifier vos filtres ou effectuez une nouvelle recherche.</p>
+                    <h3 className="empty-state-title">{t('feed.empty_title')}</h3>
+                    <p className="empty-state-desc" style={{ color: 'var(--text-muted)' }}>{t('feed.empty_desc')}</p>
                     <button className="btn btn-secondary" style={{ marginTop: 24 }} onClick={() => { setSearch(''); setCategory(''); setSeverity(''); setPage(1); }}>
-                        Réinitialiser les filtres
+                        {t('feed.reset_filters')}
                     </button>
                 </div>
             )}
             
-            <Link to="/report" className="fab-button" title="Signaler un incident" style={{ position: 'fixed', bottom: 32, right: 32, width: 56, height: 56, borderRadius: '50%', background: 'var(--brand-orange)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(232,84,26,0.4)', transition: 'transform 0.2s' }}>
+            <Link to="/report" className="fab-button" title={t('nav.report_incident')} style={{ position: 'fixed', bottom: 32, right: 32, width: 56, height: 56, borderRadius: '50%', background: 'var(--brand-orange)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(232,84,26,0.4)', transition: 'transform 0.2s' }}>
                 <Zap size={24} fill="white" />
             </Link>
         </div>

@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -64,7 +65,25 @@ const ChangeView = ({ center }) => {
 };
 
 const ReportIncidentPage = () => {
+    const { t } = useTranslation();
     const { theme } = useTheme();
+
+    const CATS = [
+        { value: 'theft', label: t('feed.categories.theft'), icon: ShieldAlert },
+        { value: 'assault', label: t('feed.categories.assault'), icon: ShieldAlert },
+        { value: 'vandalism', label: t('feed.categories.vandalism'), icon: Hammer },
+        { value: 'suspicious_activity', label: t('feed.categories.suspicious_activity'), icon: Eye },
+        { value: 'fire', label: t('feed.categories.fire'), icon: Flame },
+        { value: 'kidnapping', label: t('feed.categories.kidnapping'), icon: Ghost },
+        { value: 'other', label: t('feed.categories.other'), icon: AlertTriangle },
+    ];
+    const SEVS = [
+        { value: 'low', label: t('feed.severities.low'), desc: t('incident.report.form.severity_desc.low') },
+        { value: 'medium', label: t('feed.severities.medium'), desc: t('incident.report.form.severity_desc.medium') },
+        { value: 'high', label: t('feed.severities.high'), desc: t('incident.report.form.severity_desc.high') },
+        { value: 'critical', label: t('feed.severities.critical'), desc: t('incident.report.form.severity_desc.critical') },
+    ];
+
     const mapTileUrl = theme === 'dark'
         ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
@@ -107,7 +126,7 @@ const ReportIncidentPage = () => {
     };
 
     const handleGetLocation = () => {
-        if (!navigator.geolocation) { setError("Géolocalisation non supportée."); return; }
+        if (!navigator.geolocation) { setError(t('incident.report.geo_not_supported')); return; }
         setGeoLoading(true); setError(null);
         navigator.geolocation.getCurrentPosition(
             async ({ coords: { latitude, longitude } }) => {
@@ -122,12 +141,12 @@ const ReportIncidentPage = () => {
                     }));
                 } catch {
                     setForm(p => ({ ...p, lat: latitude, lng: longitude }));
-                    setError("Position récupérée, mais adresse introuvable automatiquement.");
+                    setError(t('incident.report.geo_address_error'));
                 } finally { setGeoLoading(false); }
             },
             (err) => {
                 setGeoLoading(false);
-                setError(err.code === 1 ? "Localisation refusée." : "Impossible de vous localiser.");
+                setError(err.code === 1 ? t('incident.report.geo_denied') : t('incident.report.geo_failed'));
             },
             { timeout: 10000 }
         );
@@ -147,7 +166,7 @@ const ReportIncidentPage = () => {
             } else if (err.response?.data?.message) {
                 setError(err.response.data.message);
             } else {
-                setError('Erreur lors du signalement.');
+                setError(t('incident.report.error_submit'));
             }
         } finally { setLoading(false); }
     };
@@ -159,9 +178,9 @@ const ReportIncidentPage = () => {
         <div className="page-container fade-in">
             <div className="page-header" style={{ marginBottom: 32 }}>
                 <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <ShieldAlert size={28} color="var(--brand-orange)" /> Signaler un incident
+                    <ShieldAlert size={28} color="var(--brand-orange)" /> {t('incident.report.title')}
                 </h1>
-                <p className="page-subtitle">Aidez la communauté en signalant un problème de sécurité localement.</p>
+                <p className="page-subtitle">{t('incident.report.subtitle')}</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
@@ -172,18 +191,18 @@ const ReportIncidentPage = () => {
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label className="form-label" htmlFor="title">
-                                Titre du signalement
+                                {t('incident.report.form.title')}
                                 <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
-                                    (Min. 5 caractères)
+                                    {t('incident.report.form.min_chars_5')}
                                 </span>
                             </label>
                             <input className="form-control" type="text" id="title"
-                                placeholder="Ex: Incendie au marché central, Vol de moto..."
+                                placeholder={t('incident.report.form.title_placeholder')}
                                 value={form.title} onChange={e => set('title', e.target.value)} required minLength={5} maxLength={100} />
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Catégorie</label>
+                            <label className="form-label">{t('incident.report.form.category')}</label>
                             <div className="cat-grid">
                                 {CATS.map(cat => {
                                     const Icon = cat.icon;
@@ -202,7 +221,7 @@ const ReportIncidentPage = () => {
 
                         <div className="form-group">
                             <label className="form-label">
-                                Niveau de gravité
+                                {t('incident.report.form.severity')}
                                 {selectedSev && (
                                     <span className={`badge badge-${form.severity}`} style={{ marginLeft: 8 }}>
                                         {selectedSev.label}
@@ -224,13 +243,13 @@ const ReportIncidentPage = () => {
 
                         <div className="form-group">
                             <label className="form-label" htmlFor="description">
-                                Description détaillée
+                                {t('incident.report.form.description')}
                                 <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
-                                    (Min. 20) • {form.description.length}/2000
+                                    {t('incident.report.form.min_chars_20')} • {form.description.length}/2000
                                 </span>
                             </label>
                             <textarea className="form-control" id="description" rows={4}
-                                placeholder="Décrivez l'incident en détail : que s'est-il passé, les personnes impliquées, l'heure approximative..."
+                                placeholder={t('incident.report.form.description_placeholder')}
                                 value={form.description} onChange={e => set('description', e.target.value)}
                                 required minLength={20} maxLength={2000} />
                         </div>
@@ -238,18 +257,18 @@ const ReportIncidentPage = () => {
                         <div className="form-group">
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                                 <label className="form-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <MapPin size={18} /> Localisation
+                                    <MapPin size={18} /> {t('incident.report.form.location')}
                                 </label>
                                 <button type="button" className="btn btn-sm btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: 8 }}
                                     onClick={handleGetLocation} disabled={geoLoading}>
                                     {geoLoading ? <Loader2 size={14} className="spin" /> : <Target size={14} />}
-                                    {geoLoading ? 'Localisation...' : 'Ma position GPS'}
+                                    {geoLoading ? '...' : t('incident.report.form.my_position')}
                                 </button>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <input className="form-control" type="text" placeholder="Adresse ou point de repère"
+                                <input className="form-control" type="text" placeholder={t('incident.report.form.address_placeholder')}
                                     value={form.address} onChange={e => set('address', e.target.value)} required />
-                                <input className="form-control" type="text" placeholder="Ville"
+                                <input className="form-control" type="text" placeholder={t('incident.report.form.city_placeholder')}
                                     value={form.city} onChange={e => set('city', e.target.value)} />
                             </div>
                         </div>
@@ -267,15 +286,15 @@ const ReportIncidentPage = () => {
 
                         <div className="form-group">
                             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <Camera size={18} /> Photos (optionnel)
-                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem' }}>Max 4 photos</span>
+                                <Camera size={18} /> {t('incident.report.form.photos')}
+                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem' }}>{t('incident.report.form.max_4')}</span>
                             </label>
                             <div className="upload-zone" style={{ borderRadius: 12, border: '2px dashed var(--border)', padding: '32px 16px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => fileInputRef.current?.click()} onMouseOver={e => e.currentTarget.style.borderColor = 'var(--brand-orange)'} onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}>
                                 <div className="upload-zone-icon" style={{ marginBottom: 12, color: 'var(--text-muted)' }}>
                                     <ImageIcon size={32} opacity={0.4} />
                                 </div>
-                                <div className="upload-zone-text" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Cliquez pour ajouter des photos</div>
-                                <div className="upload-zone-hint" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>JPG, PNG, WEBP • Max 5 Mo chacune</div>
+                                <div className="upload-zone-text" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t('incident.report.form.upload_hint')}</div>
+                                <div className="upload-zone-hint" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>{t('incident.report.form.upload_limits')}</div>
                             </div>
                             <input ref={fileInputRef} type="file" style={{ display: 'none' }}
                                 multiple accept="image/*" onChange={handleImageChange} />
@@ -298,11 +317,11 @@ const ReportIncidentPage = () => {
                                     checked={form.isAnonymous} onChange={e => set('isAnonymous', e.target.checked)} />
                                 <div className="toggle-switch" />
                                 <span style={{ fontSize: '0.875rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <Ghost size={16} /> Signaler anonymement
+                                    <Ghost size={16} /> {t('incident.report.form.anonymous')}
                                 </span>
                             </label>
                             {form.isAnonymous && (
-                                <p className="form-hint" style={{ fontSize: '0.75rem', marginTop: 8, color: 'var(--text-muted)', marginLeft: 44 }}>Votre identité ne sera pas visible dans le signalement public.</p>
+                                <p className="form-hint" style={{ fontSize: '0.75rem', marginTop: 8, color: 'var(--text-muted)', marginLeft: 44 }}>{t('incident.report.form.anonymous_hint')}</p>
                             )}
                         </div>
 
@@ -310,7 +329,7 @@ const ReportIncidentPage = () => {
                             {loading ? (
                                 <Loader2 size={20} className="spin" />
                             ) : <Send size={20} />}
-                            {loading ? 'Envoi en cours...' : 'Soumettre le signalement'}
+                            {loading ? t('incident.report.form.submitting') : t('incident.report.form.submit')}
                         </button>
                     </form>
                 </div>
@@ -318,7 +337,7 @@ const ReportIncidentPage = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <div className="card" style={{ background: 'linear-gradient(135deg, var(--brand-navy), var(--brand-navy-light))', border: 'none', padding: 24, boxShadow: 'var(--shadow-lg)' }}>
                         <p style={{ fontSize: '0.72rem', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <ClipboardCheck size={14} /> RÉCAPITULATIF
+                            <ClipboardCheck size={14} /> {t('incident.report.summary.title')}
                         </p>
                         <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
                             <div style={{ width: 52, height: 52, borderRadius: 12, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -328,7 +347,7 @@ const ReportIncidentPage = () => {
                                 })() : <AlertTriangle size={24} color="var(--brand-orange)" />}
                             </div>
                             <div>
-                                <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fff' }}>{selectedCat?.label || 'Autre'}</div>
+                                <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fff' }}>{selectedCat?.label || t('feed.categories.other')}</div>
                                 <span className={`badge badge-${form.severity}`} style={{ marginTop: 6, display: 'inline-block' }}>{selectedSev?.label}</span>
                             </div>
                         </div>
@@ -341,19 +360,19 @@ const ReportIncidentPage = () => {
 
                     <div className="card" style={{ borderLeft: '4px solid var(--yellow)', padding: 16 }}>
                         <p style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, color: '#b45309' }}>
-                            <Info size={16} /> Rappel civique
+                            <Info size={16} /> {t('incident.report.summary.civic_reminder.title')}
                         </p>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                            Tout signalement abusif peut entraîner des sanctions. La précision géographique permet une intervention plus rapide.
+                            {t('incident.report.summary.civic_reminder.desc')}
                         </p>
                     </div>
 
                     <div className="card" style={{ borderLeft: '4px solid #10b981', padding: 16 }}>
                         <p style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, color: '#047857' }}>
-                            <CheckCircle size={16} /> Validation rapide
+                            <CheckCircle size={16} /> {t('incident.report.summary.fast_validation.title')}
                         </p>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                            Si d'autres citoyens signalent le même incident à proximité, il sera priorisé par nos services de modération.
+                            {t('incident.report.summary.fast_validation.desc')}
                         </p>
                     </div>
                 </div>
