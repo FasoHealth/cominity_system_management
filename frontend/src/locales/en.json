@@ -1,5 +1,6 @@
 {
   "nav": {
+    "brand_name": "CS Alert",
     "login": "Login",
     "register": "Registration",
     "dashboard": "Dashboard",
@@ -42,7 +43,8 @@
       "error_login": "Invalid credentials.",
       "tagline_1": "Your safety,",
       "tagline_2": "our community.",
-      "contact_admin": "Contact an administrator"
+      "contact_admin": "Contact an administrator",
+      "logging_in": "Logging in..."
     },
     "register": {
       "title": "Create an Account",
@@ -54,22 +56,21 @@
       "submit": "Join the Community",
       "have_account": "Already have an account?",
       "login_now": "Log in",
-      "tagline_1": "Stronger",
-      "tagline_2": "together.",
-      "error_signup": "An error occurred during registration.",
-      "error_mismatch": "Passwords do not match.",
-      "error_invalid_email": "Please enter a valid email address.",
-      "error_register": "Registration failed.",
+      "error_password_mismatch": "Passwords do not match.",
+      "error_name_short": "Name is too short (min 2 characters).",
+      "error_password_requirement": "Password must be at least 8 characters and include a number.",
+      "min_chars_prompt": "8 chars min. + 1 number",
+      "name_hint": "(Min. 2) • {{count}}/50",
+      "phone_hint": "(optional)",
       "full_name": "Full Name",
       "phone": "Phone Number",
       "optional": "(optional)",
       "role": "Role",
       "placeholders": {
         "name": "John Doe",
-        "phone": "07 00 00 00 00",
+        "phone": "+226 XX XX XX XX",
         "email": "your@email.com"
       },
-
       "citizen": "Citizen",
       "admin": "Administrator",
       "creating": "Creating account...",
@@ -81,7 +82,8 @@
       "title": "Forgot Password?",
       "subtitle": "Enter your email address to receive a reset link.",
       "send_btn": "Send Link",
-      "success_title": "Check your emails"
+      "success_title": "Check your emails",
+      "error_forgot": "Failed to send reset link."
     },
     "reset": {
       "title": "New Password",
@@ -98,6 +100,7 @@
   },
   "chat": {
     "official_title": "Official Conversation",
+    "administration": "ADMINISTRATION",
     "support_role": "Citizen Support",
     "admin_discussion": "Discussion with Admin",
     "empty_title": "No messages",
@@ -113,6 +116,13 @@
       "approved": "Visible",
       "pending": "Pending",
       "resolved": "Resolved"
+    },
+    "loading": "Loading dashboard...",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "resolved": "Resolved",
+      "rejected": "Rejected"
     },
     "chart": {
       "title": "Recent Activity",
@@ -152,6 +162,11 @@
     "reset_filters": "Reset",
     "loading": "Loading incidents...",
     "no_incidents": "No incidents found.",
+    "empty_title": "No matching alerts",
+    "empty_desc": "We could not find any incidents matching your current criteria.",
+    "filters": {
+      "all": "All"
+    },
     "categories": {
       "all": "All Categories",
       "theft": "Theft",
@@ -182,27 +197,52 @@
       "day": "{{count}}d ago"
     },
     "confirmations": {
-        "title": "Confirmations",
-        "upvotes": "confirmed by {{count}} people",
-        "be_first": "Be the first to confirm"
-    }
+      "title": "Confirmations",
+      "upvotes": "confirmed by {{count}} people",
+      "be_first": "Be the first to confirm",
+      "admin_tooltip": "Admin cannot vote",
+      "already_approved_tooltip": "Incident already approved",
+      "confirm_tooltip": "Confirm"
+    },
+    "pending_badge": "Pending",
+    "photo": "photo",
+    "photos": "photos",
+    "view_details": "View details",
+    "verified_badge": "Verified"
   },
   "incident": {
     "detail": {
       "loading": "Loading incident details...",
       "error": "Incident not found or error loading.",
       "back_to_feed": "Back to feed",
-      "reported_on": "Reported on",
+      "reported_on": "Reported on {{date}} by {{name}}",
       "anonymous": "Anonymous user",
       "mark_resolved": "Mark as resolved",
       "confirm_resolve": "Are you sure you want to mark this incident as resolved?",
+      "resolve_error": "Error while resolving the incident.",
       "security_tips": "Security Tips",
       "quick_reaction": "Quick Reaction",
       "reaction_desc": "Keep a safe distance and alert local authorities if necessary.",
       "live_discussion": "Live Discussion",
       "no_messages": "No messages yet.",
       "type_message": "Type your message...",
-      "send": "Send"
+      "send": "Send",
+      "description": "Description",
+      "location": "Location",
+      "unspecified_city": "Unspecified city",
+      "no_coords": "GPS coordinates not available for this incident.",
+      "photos": "Photos",
+      "security_tip": "Security Tip",
+      "security_tip_desc": "Keep a safe distance and alert local authorities if necessary.",
+      "confirm_incident": "Confirm Incident",
+      "confirmed": "Confirmed",
+      "more_for_validation": "More than {{count}} confirmations needed for validation",
+      "vote_admin_tooltip": "Admin cannot vote",
+      "vote_not_pending_tooltip": "Incident is no longer pending",
+      "auto_approved_msg": "Thanks to your confirmation, this incident is now officially validated!",
+      "error_load": "Error loading",
+      "not_found": "Incident not found",
+      "anonymous_user": "Anonymous user"
     },
     "report": {
       "title": "Report an Incident",
@@ -300,7 +340,9 @@
       "city_placeholder": "Ouagadougou",
       "save_btn": "Save my profile",
       "loading": "Loading...",
-      "error_save": "Error during saving."
+      "error_save": "Error during saving.",
+      "status_on": "Enabled",
+      "status_off": "Disabled"
     },
     "notifications": {
       "title": "Notification Preferences",
@@ -350,7 +392,7 @@
     },
     "table": {
       "incident": "Incident",
-      "category": "Category",
+      "category": "Category / Level",
       "location": "Location",
       "date": "Date",
       "status": "Status",
@@ -400,49 +442,76 @@
       "votes_other": "{{count}} votes"
     },
     "users": {
-        "title": "Users",
-        "total_hint": "{{count}} in total",
-        "search_placeholder": "Search...",
-        "new_btn": "New User",
-        "loading": "Loading directory...",
-        "table": {
-            "user": "USER",
-            "email": "EMAIL",
-            "role": "ROLE",
-            "status": "STATUS",
-            "date": "JOINED ON",
-            "reports": "REPORTS"
-        },
-        "roles": {
-            "admin": "Admin",
-            "moderator": "Moderator",
-            "citizen": "Citizen"
-        },
-        "stats": {
-            "active": "Active Accounts",
-            "banned": "Banned / Inactive",
-            "new_month": "New this month"
-        },
-        "pagination_hint": "Showing {{start}}-{{end}} of {{total}}"
+      "title": "Users",
+      "total_hint": "{{count}} in total",
+      "search_placeholder": "Search...",
+      "new_btn": "New User",
+      "loading": "Loading directory...",
+      "table": {
+        "user": "USER",
+        "email": "EMAIL",
+        "role": "ROLE",
+        "status": "STATUS",
+        "date": "JOINED ON",
+        "reports": "REPORTS"
+      },
+      "roles": {
+        "admin": "Admin",
+        "moderator": "Moderator",
+        "citizen": "Citizen"
+      },
+      "stats": {
+        "active": "Active Accounts",
+        "banned": "Banned / Inactive",
+        "new_month": "New this month"
+      },
+      "pagination_hint": "Showing {{start}}-{{end}} of {{total}}"
     },
     "appeals": {
-        "title": "Account Appeals",
-        "subtitle": "Manage reactivation requests from banned users.",
-        "empty_title": "No pending requests",
-        "empty_desc": "Everything looks fine! Check back later.",
-        "user_msg": "User Message:",
-        "admin_reply": "Admin Reply",
-        "reactivate": "Reactivate Account",
-        "reply": "Reply",
-        "edit_reply": "Edit Reply",
-        "replied": "REPLIED",
-        "resolved": "RESOLVED",
-        "confirm_reactivate": "Are you sure you want to reactivate the account of {{name}}?",
-        "reactivate_msg": "Your account has been reactivated. You can now log in.",
-        "reactivate_success": "Account reactivated successfully!",
-        "unknown_user": "Unknown user",
-        "reply_placeholder": "Type your reply for the user..."
+      "title": "Account Appeals",
+      "subtitle": "Manage reactivation requests from banned users.",
+      "empty_title": "No pending requests",
+      "empty_desc": "Everything looks fine! Check back later.",
+      "user_msg": "User Message:",
+      "admin_reply": "Admin Reply",
+      "reactivate": "Reactivate Account",
+      "reply": "Reply",
+      "edit_reply": "Edit Reply",
+      "replied": "REPLIED",
+      "resolved": "RESOLVED",
+      "confirm_reactivate": "Are you sure you want to reactivate the account of {{name}}?",
+      "reactivate_msg": "Your account has been reactivated. You can now log in.",
+      "reactivate_success": "Account reactivated successfully!",
+      "unknown_user": "Unknown user",
+      "reply_placeholder": "Type your reply for the user..."
+    }
+  },
+  "landing": {
+    "app_title": "CS Alert Mobile",
+    "app_subtitle": "Faster, push notifications",
+    "app_install": "Install",
+    "app_download_alert": "The download link (Play Store / App Store) will be available soon!",
+    "nav_login": "Log In",
+    "hero_tag": "Citizen safety platform",
+    "hero_title_1": "Together, let's make our",
+    "hero_title_2": "community safer.",
+    "hero_desc": "Community Security Alert allows you to instantly report security incidents, be alerted in real time, and protect your loved ones.",
+    "hero_report_btn": "Report an incident",
+    "hero_join_btn": "Join the community",
+    "feature_realtime_title": "Real-time alerts",
+    "feature_realtime_desc": "Be instantly informed of reported incidents in your geographic area to stay safe.",
+    "feature_map_title": "Precise mapping",
+    "feature_map_desc": "Visualize risk zones on an interactive map updated by citizens and moderated by our teams.",
+    "feature_mod_title": "Reliable moderation",
+    "feature_mod_desc": "A community validation system guarantees the reliability of alerts to avoid false information.",
+    "footer": "© {{year}} Community Security Alert - CS27 Group 16. All rights reserved."
+  },
+  "app": {
+    "install_prompt": {
+      "title": "Mobile Application",
+      "desc": "Receive real-time alerts and protect your loved ones.",
+      "btn": "Download App",
+      "close": "Close"
     }
   }
 }
-

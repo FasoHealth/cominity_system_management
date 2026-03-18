@@ -1,19 +1,20 @@
 // frontend/src/pages/IncidentDetailPage.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import ChatBox from '../components/ChatBox';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { 
-    ArrowLeft, 
-    CheckCircle2, 
-    ThumbsUp, 
-    MapPin, 
-    Building2, 
-    Map, 
+import {
+    ArrowLeft,
+    CheckCircle2,
+    ThumbsUp,
+    MapPin,
+    Building2,
+    Map,
     Navigation,
     Clock,
     User,
@@ -23,7 +24,7 @@ import {
     Car,
     Hammer,
     Eye,
-    CheckCircle,
+    Ghost,
     MessageSquare
 } from 'lucide-react';
 
@@ -39,34 +40,40 @@ const createColoredMarker = (color) => L.divIcon({
     popupAnchor: [0, -10],
 });
 
-const getImageUrl = (path) => {
-    return process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/${path}` : `/${path}`;
-};
-
-import { useTranslation } from 'react-i18next';
+import { getImageUrl } from '../utils/imageUtils';
 
 const IncidentDetailPage = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const { theme } = useTheme();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [incident, setIncident] = useState(null);
 
-    const CAT_LABELS = { 
-        theft: t('feed.categories.theft'), 
-        assault: t('feed.categories.assault'), 
-        vandalism: t('feed.categories.vandalism'), 
-        suspicious_activity: t('feed.categories.suspicious_activity'), 
-        fire: t('feed.categories.fire'), 
-        kidnapping: t('feed.categories.kidnapping'), 
-        other: t('feed.categories.other') 
+    const CATEGORY_ICONS = {
+        theft: ShieldAlert,
+        assault: ShieldAlert,
+        vandalism: Hammer,
+        suspicious_activity: Eye,
+        fire: Flame,
+        kidnapping: Ghost,
+        other: AlertTriangle
     };
 
-    const SEV_LABELS = { 
-        low: t('feed.severities.low'), 
-        medium: t('feed.severities.medium'), 
-        high: t('feed.severities.high'), 
-        critical: t('feed.severities.critical') 
+    const CAT_LABELS = {
+        theft: t('feed.categories.theft'),
+        assault: t('feed.categories.assault'),
+        vandalism: t('feed.categories.vandalism'),
+        suspicious_activity: t('feed.categories.suspicious_activity'),
+        fire: t('feed.categories.fire'),
+        kidnapping: t('feed.categories.kidnapping'),
+        other: t('feed.categories.other')
+    };
+
+    const SEV_LABELS = {
+        low: t('feed.severities.low'),
+        medium: t('feed.severities.medium'),
+        high: t('feed.severities.high'),
+        critical: t('feed.severities.critical')
     };
 
     const mapTileUrl = theme === 'dark'
@@ -108,7 +115,7 @@ const IncidentDetailPage = () => {
                 setIncident(data.incident || incident);
                 setHasVoted(data.hasVoted);
                 setLoadingUpvote(false);
-                
+
                 if (data.autoApproved) {
                     alert(t('incident.detail.auto_approved_msg', "Grâce à votre confirmation, cet incident est maintenant officiellement validé !"));
                 }
@@ -154,7 +161,7 @@ const IncidentDetailPage = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
                     <div>
                         <div className="incident-card-badges" style={{ marginBottom: '12px', display: 'flex', gap: 8 }}>
-                            <span className={`badge badge-${incident.status}`}>{t(`dashboard.status.${incident.status}`)}</span>
+                            <span className={`badge badge-${incident.status}`}>{t(`feed.status.${incident.status}`)}</span>
                             <span className={`badge badge-${incident.severity}`}>{SEV_LABELS[incident.severity]}</span>
                             <span className={`badge badge-${incident.category}`} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <CatIcon size={12} /> {CAT_LABELS[incident.category]}
@@ -162,8 +169,8 @@ const IncidentDetailPage = () => {
                         </div>
                         <h1 className="page-title">{incident.title}</h1>
                         <p className="page-subtitle" style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <User size={14} /> {t('incident.detail.reported_on', { 
-                                date: new Date(incident.createdAt).toLocaleDateString(),
+                            <User size={14} /> {t('incident.detail.reported_on', {
+                                date: new Date(incident.createdAt).toLocaleDateString(i18n.language),
                                 name: incident.reportedBy ? incident.reportedBy.name : t('incident.detail.anonymous_user')
                             })}
                         </p>
@@ -179,11 +186,11 @@ const IncidentDetailPage = () => {
                                     } catch (err) { alert(t('incident.detail.resolve_error')); }
                                 }
                             }}>
-                                <CheckCircle size={18} /> {t('incident.detail.mark_resolved')}
+                                <CheckCircle2 size={18} /> {t('incident.detail.mark_resolved')}
                             </button>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <button 
+                            <button
                                 className={`btn ${hasVoted ? 'btn-secondary' : 'btn-primary'}`}
                                 onClick={handleUpvote}
                                 disabled={loadingUpvote || (incident.status !== 'pending') || (user?.role === 'admin')}
@@ -193,25 +200,25 @@ const IncidentDetailPage = () => {
                                 <ThumbsUp size={18} fill={hasVoted ? 'currentColor' : 'none'} />
                                 {hasVoted ? t('incident.detail.confirmed') : t('incident.detail.confirm_incident')}
                             </button>
-                            
+
                             {incident.status === 'pending' && (
                                 <div style={{ flex: 1 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                                         <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand-orange)' }}>
-                                            {t('feed.confirmations', { count: incident.upvotes?.length || 0 })}
+                                            {t('feed.confirmations.upvotes', { count: incident.upvotes?.length || 0 })}
                                         </span>
                                         <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                                             {t('incident.detail.more_for_validation', { count: 5 - (incident.upvotes?.length || 0) })}
                                         </span>
                                     </div>
                                     <div style={{ height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                                        <div 
-                                            style={{ 
-                                                width: `${Math.min((incident.upvotes?.length || 0) * 20, 100)}%`, 
-                                                height: '100%', 
+                                        <div
+                                            style={{
+                                                width: `${Math.min((incident.upvotes?.length || 0) * 20, 100)}%`,
+                                                height: '100%',
                                                 background: 'var(--brand-orange)',
                                                 transition: 'width 0.4s ease'
-                                            }} 
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -232,9 +239,12 @@ const IncidentDetailPage = () => {
                         <div style={{ marginTop: '32px' }}>
                             <h3 className="card-title" style={{ marginBottom: '16px' }}>{t('incident.detail.photos')}</h3>
                             <div className="grid-2">
-                                {incident.images.map((img, i) => (
-                                    <img key={i} src={getImageUrl(img.path)} alt="" style={{ borderRadius: 'var(--radius-md)', width: '100%', aspectRatio: '16/9', objectFit: 'cover', cursor: 'pointer', transition: 'transform 0.2s' }} onClick={() => window.open(getImageUrl(img.path), '_blank')} onMouseOver={e => e.target.style.transform = 'scale(1.02)'} onMouseOut={e => e.target.style.transform = 'scale(1)'} />
-                                ))}
+                                {incident.images.map((img, i) => {
+                                    const imageUrl = getImageUrl(img.path);
+                                    return (
+                                        <img key={i} src={imageUrl} alt="" style={{ borderRadius: 'var(--radius-md)', width: '100%', aspectRatio: '16/9', objectFit: 'cover', cursor: 'pointer', transition: 'transform 0.2s' }} onClick={() => window.open(imageUrl, '_blank')} onMouseOver={e => e.target.style.transform = 'scale(1.02)'} onMouseOut={e => e.target.style.transform = 'scale(1)'} />
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
@@ -284,7 +294,7 @@ const IncidentDetailPage = () => {
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Security Tip Card */}
                     <div className="card" style={{ background: 'var(--brand-orange-pale)', border: '1px dashed var(--brand-orange)' }}>
                         <h4 style={{ color: 'var(--brand-orange)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>

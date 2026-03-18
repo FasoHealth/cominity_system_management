@@ -4,21 +4,22 @@ import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { timeAgo } from '../../utils/dateUtils';
 
-import { 
-    ShieldAlert, 
-    Hammer, 
-    Eye, 
-    Flame, 
-    Car, 
-    AlertTriangle, 
-    Search, 
-    RefreshCw, 
-    Clock, 
-    MapPin, 
-    ThumbsUp, 
-    Check, 
-    X, 
+import {
+    ShieldAlert,
+    Hammer,
+    Eye,
+    Flame,
+    Car,
+    AlertTriangle,
+    Search,
+    RefreshCw,
+    Clock,
+    MapPin,
+    ThumbsUp,
+    Check,
+    X,
     Trophy,
     CheckCircle2,
     Calendar,
@@ -28,7 +29,7 @@ import {
 
 
 const AdminIncidentsPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('pending');
@@ -36,35 +37,26 @@ const AdminIncidentsPage = () => {
     const [search, setSearch] = useState('');
     const [actionLoading, setActionLoading] = useState(null);
 
-    const CAT_LABELS = { 
-        theft: t('feed.categories.theft'), 
-        assault: t('feed.categories.assault'), 
-        vandalism: t('feed.categories.vandalism'), 
-        suspicious_activity: t('feed.categories.suspicious_activity'), 
-        fire: t('feed.categories.fire'), 
-        kidnapping: t('feed.categories.kidnapping'), 
-        other: t('feed.categories.other') 
+    const CAT_LABELS = {
+        theft: t('feed.categories.theft'),
+        assault: t('feed.categories.assault'),
+        vandalism: t('feed.categories.vandalism'),
+        suspicious_activity: t('feed.categories.suspicious_activity'),
+        fire: t('feed.categories.fire'),
+        kidnapping: t('feed.categories.kidnapping'),
+        other: t('feed.categories.other')
     };
 
-    const CAT_ICONS = { 
-        theft: ShieldAlert, 
-        assault: ShieldAlert, 
-        vandalism: Hammer, 
-        suspicious_activity: Eye, 
-        fire: Flame, 
-        kidnapping: ShieldAlert, 
-        other: AlertTriangle 
+    const CAT_ICONS = {
+        theft: ShieldAlert,
+        assault: ShieldAlert,
+        vandalism: Hammer,
+        suspicious_activity: Eye,
+        fire: Flame,
+        kidnapping: ShieldAlert,
+        other: AlertTriangle
     };
 
-    function timeAgo(date) {
-        const sec = Math.floor((Date.now() - new Date(date)) / 1000);
-        if (sec < 60) return t('feed.time.now');
-        const min = Math.floor(sec / 60);
-        if (min < 60) return t('feed.time.min', { count: min });
-        const h = Math.floor(min / 60);
-        if (h < 24) return t('feed.time.hour', { count: h });
-        return new Date(date).toLocaleDateString();
-    }
 
     const fetchAdminIncidents = async () => {
         setLoading(true);
@@ -149,7 +141,7 @@ const AdminIncidentsPage = () => {
                             display: 'flex', alignItems: 'center', gap: 8
                         }}>
                             <TabIcon size={16} />
-                            {t_tab.l} 
+                            {t_tab.l}
                             {t_tab.c > 0 && <span style={{ fontSize: '0.7rem', fontWeight: 800, marginLeft: 4, background: activeTab === t_tab.v ? 'rgba(232,84,26,0.1)' : 'var(--bg-secondary)', color: activeTab === t_tab.v ? 'var(--brand-orange)' : 'var(--text-muted)', padding: '2px 8px', borderRadius: 20 }}>{t_tab.c}</span>}
                         </button>
                     );
@@ -171,7 +163,7 @@ const AdminIncidentsPage = () => {
                                 <div className="mod-card-thumb" style={{ background: iconBg, width: 80, height: 80, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     <IconComponent size={32} color={iconColor} />
                                     <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: 4, letterSpacing: '0.05em' }}>
-                                        {inc.severity.toUpperCase()}
+                                        {t(`feed.severities.${inc.severity}`).toUpperCase()}
                                     </div>
                                 </div>
 
@@ -189,7 +181,7 @@ const AdminIncidentsPage = () => {
                                         {inc.description}
                                     </p>
                                     <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: 'var(--text-muted)', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Clock size={12} /> {timeAgo(inc.createdAt)}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Clock size={12} /> {timeAgo(inc.createdAt, t, i18n.language)}</div>
                                         {inc.location?.address && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={12} /> {inc.location.address}</div>
                                         )}

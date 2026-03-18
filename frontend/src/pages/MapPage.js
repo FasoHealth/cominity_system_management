@@ -3,19 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import L from 'leaflet';
-import { 
-    Map as MapIcon, 
-    MapPin, 
-    Clock, 
-    Search, 
-    Navigation, 
-    ThumbsUp, 
-    Zap, 
-    Target, 
-    Plus, 
-    Minus, 
+import {
+    Map as MapIcon,
+    MapPin,
+    Clock,
+    Search,
+    Navigation,
+    ThumbsUp,
+    Zap,
+    Target,
+    Plus,
+    Minus,
     AlertCircle,
     ShieldAlert,
     AlertTriangle,
@@ -24,10 +25,9 @@ import {
     Hammer,
     Eye,
     LocateFixed,
-    ChevronRight
+    ChevronRight,
+    Ghost
 } from 'lucide-react';
-
-const CAT_LABELS = { theft: 'Vol', assault: 'Agression', vandalism: 'Vandalisme', suspicious_activity: 'Suspect', fire: 'Incendie', kidnapping: 'Enlèvement', other: 'Autre' };
 
 const CATEGORY_ICONS = {
     theft: ShieldAlert,
@@ -35,29 +35,11 @@ const CATEGORY_ICONS = {
     vandalism: Hammer,
     suspicious_activity: Eye,
     fire: Flame,
-    kidnapping: ShieldAlert,
+    kidnapping: Ghost,
     other: AlertTriangle
 };
 
 const SEV_COLORS = { low: '#22C55E', medium: '#EAB308', high: '#F97316', critical: '#EF4444' };
-const SEV_LABELS = { low: 'Faible', medium: 'Moyen', high: 'Élevé', critical: 'Critique' };
-
-const CAT_PILLS = [
-    { value: '', label: 'Tout' },
-    { value: 'theft', label: 'Vol' },
-    { value: 'assault', label: 'Sécurité' },
-    { value: 'fire', label: 'Incendie' },
-    { value: 'vandalism', label: 'Vandalisme' },
-    { value: 'kidnapping', label: 'Enlèvement' },
-];
-
-function timeAgo(date) {
-    const sec = Math.floor((Date.now() - new Date(date)) / 1000);
-    if (sec < 60) return "À l'instant";
-    const min = Math.floor(sec / 60);
-    if (min < 60) return `Il y a ${min} min`;
-    return `Il y a ${Math.floor(min / 60)}h`;
-}
 
 function haversineKm(lat1, lng1, lat2, lng2) {
     const R = 6371;
@@ -67,11 +49,10 @@ function haversineKm(lat1, lng1, lat2, lng2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function formatDist(km) {
-    return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
+function formatDist(km, t) {
+    return km < 1 ? `${Math.round(km * 1000)} ${t('map.unit_m')}` : `${km.toFixed(1)} ${t('map.unit_km')}`;
 }
 
-// Fixed SVG icon helper for Leaflet markers to avoid complex React rendering inside L.divIcon
 const createMarker = (color) => L.divIcon({
     className: '',
     html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 10px ${color}99;display:flex;align-items:center;justify-content:center;">
@@ -80,28 +61,36 @@ const createMarker = (color) => L.divIcon({
     iconSize: [24, 24], iconAnchor: [12, 12], popupAnchor: [0, -12],
 });
 
-const FlyTo = ({ pos }) => { const map = useMap(); useEffect(() => { if (pos) map.flyTo(pos, 15, { duration: 0.8 }); }, [pos]); return null; };
+const FlyTo = ({ pos }) => {
+    const map = useMap();
+    useEffect(() => {
+        if (pos) {
+            map.flyTo(pos, 15, { duration: 0.8 });
+        }
+    }, [pos, map]);
+    return null;
+};
 
 const MapPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const { theme } = useTheme();
 
-    const CAT_LABELS = { 
-        theft: t('feed.categories.theft'), 
-        assault: t('feed.categories.assault'), 
-        vandalism: t('feed.categories.vandalism'), 
-        suspicious_activity: t('feed.categories.suspicious_activity'), 
-        fire: t('feed.categories.fire'), 
-        kidnapping: t('feed.categories.kidnapping'), 
-        other: t('feed.categories.other') 
+    const CAT_LABELS = {
+        theft: t('feed.categories.theft'),
+        assault: t('feed.categories.assault'),
+        vandalism: t('feed.categories.vandalism'),
+        suspicious_activity: t('feed.categories.suspicious_activity'),
+        fire: t('feed.categories.fire'),
+        kidnapping: t('feed.categories.kidnapping'),
+        other: t('feed.categories.other')
     };
 
-    const SEV_LABELS = { 
-        low: t('feed.severities.low'), 
-        medium: t('feed.severities.medium'), 
-        high: t('feed.severities.high'), 
-        critical: t('feed.severities.critical') 
+    const SEV_LABELS = {
+        low: t('feed.severities.low'),
+        medium: t('feed.severities.medium'),
+        high: t('feed.severities.high'),
+        critical: t('feed.severities.critical')
     };
 
     const CAT_PILLS = [
@@ -120,7 +109,7 @@ const MapPage = () => {
         if (min < 60) return t('feed.time.min', { count: min });
         const h = Math.floor(min / 60);
         if (h < 24) return t('feed.time.hour', { count: h });
-        return t('feed.time.day', { count: Math.floor(h / 24) });
+        return new Date(date).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US');
     }
 
     const [incidents, setIncidents] = useState([]);
@@ -262,7 +251,7 @@ const MapPage = () => {
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                                         <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            <Navigation size={10} /> {inc.dist < 999 ? formatDist(inc.dist) : '—'}
+                                            <Navigation size={10} /> {inc.dist < 999 ? formatDist(inc.dist, t) : '—'}
                                         </span>
                                         {inc.upvoteCount > 0 && (
                                             <span style={{ fontSize: '0.72rem', color: 'var(--brand-orange)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -315,29 +304,29 @@ const MapPage = () => {
                     {withDist.filter(inc => inc.location?.coordinates?.coordinates).map(inc => {
                         const coords = inc.location.coordinates.coordinates;
                         return (
-                        <Marker
-                            key={inc._id}
-                            position={[coords[1], coords[0]]}
-                            icon={createMarker(SEV_COLORS[inc.severity])}
-                            eventHandlers={{ click: () => setActiveId(inc._id) }}
-                        >
-                            <Popup>
-                                <div style={{ minWidth: 220, padding: 4 }}>
-                                    <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                                        <span className={`badge badge-${inc.category}`} style={{ fontSize: '0.65rem' }}>{CAT_LABELS[inc.category]}</span>
-                                        <span className={`badge badge-${inc.severity}`} style={{ fontSize: '0.65rem' }}>{SEV_LABELS[inc.severity]}</span>
-                                        {inc.upvoteCount > 0 && <span style={{ fontSize: '0.65rem', color: 'var(--brand-orange)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><ThumbsUp size={10} /> {inc.upvoteCount}</span>}
+                            <Marker
+                                key={inc._id}
+                                position={[coords[1], coords[0]]}
+                                icon={createMarker(SEV_COLORS[inc.severity])}
+                                eventHandlers={{ click: () => setActiveId(inc._id) }}
+                            >
+                                <Popup>
+                                    <div style={{ minWidth: 220, padding: 4 }}>
+                                        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                                            <span className={`badge badge-${inc.category}`} style={{ fontSize: '0.65rem' }}>{CAT_LABELS[inc.category]}</span>
+                                            <span className={`badge badge-${inc.severity}`} style={{ fontSize: '0.65rem' }}>{SEV_LABELS[inc.severity]}</span>
+                                            {inc.upvoteCount > 0 && <span style={{ fontSize: '0.65rem', color: 'var(--brand-orange)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><ThumbsUp size={10} /> {inc.upvoteCount}</span>}
+                                        </div>
+                                        <h4 style={{ margin: '0 0 6px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{inc.title}</h4>
+                                        <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                            <MapPin size={10} /> {inc.location.address}
+                                        </p>
+                                        <button className="btn btn-primary btn-sm btn-full" style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }} onClick={() => navigate(`/incidents/${inc._id}`)}>
+                                            {t('map.details_btn')} <ChevronRight size={14} />
+                                        </button>
                                     </div>
-                                    <h4 style={{ margin: '0 0 6px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{inc.title}</h4>
-                                    <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <MapPin size={10} /> {inc.location.address}
-                                    </p>
-                                    <button className="btn btn-primary btn-sm btn-full" style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }} onClick={() => navigate(`/incidents/${inc._id}`)}>
-                                        {t('map.details_btn')} <ChevronRight size={14} />
-                                    </button>
-                                </div>
-                            </Popup>
-                        </Marker>
+                                </Popup>
+                            </Marker>
                         );
                     })}
                 </MapContainer>
@@ -358,8 +347,8 @@ const MapPage = () => {
                 <div style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', zIndex: 400, display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {[
                         { icon: <Target size={20} />, action: () => setFlyTo(userPos) },
-                        { icon: <Plus size={20} />, action: () => {} }, // Logic would need map ref
-                        { icon: <Minus size={20} />, action: () => {} }
+                        { icon: <Plus size={20} />, action: () => { } }, // Logic would need map ref
+                        { icon: <Minus size={20} />, action: () => { } }
                     ].map((btn, i) => (
                         <div key={i} onClick={btn.action} style={{
                             width: 44, height: 44, background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '50%',

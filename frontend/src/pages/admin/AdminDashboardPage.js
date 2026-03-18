@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
-import { 
-    ShieldCheck, 
-    Zap, 
-    AlertTriangle, 
-    Clock, 
-    CheckCircle2, 
-    Trophy, 
+import {
+    ShieldCheck,
+    Zap,
+    AlertTriangle,
+    Clock,
+    CheckCircle2,
+    Trophy,
     LifeBuoy,
     BarChart3,
     PieChart as PieChartIcon,
@@ -18,7 +18,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 const AdminDashboardPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -136,7 +136,7 @@ const AdminDashboardPage = () => {
                                     dataKey="_id"
                                     stroke="var(--text-muted)"
                                     fontSize={12}
-                                    tickFormatter={(val) => new Date(val).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                                    tickFormatter={(val) => new Date(val).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { day: '2-digit', month: 'short' })}
                                 />
                                 <YAxis stroke="var(--text-muted)" fontSize={12} allowDecimals={false} />
                                 <Tooltip
@@ -168,7 +168,7 @@ const AdminDashboardPage = () => {
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip 
+                                <Tooltip
                                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: 'var(--shadow-lg)' }}
                                 />
                                 <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" wrapperStyle={{ paddingTop: 20 }} />

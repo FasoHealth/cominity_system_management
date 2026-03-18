@@ -2,15 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { 
-    Bell, 
-    BellOff, 
-    CheckCircle2, 
-    XCircle, 
-    Trophy, 
-    ShieldAlert, 
-    Clock, 
-    Eye, 
+import {
+    Bell,
+    BellOff,
+    CheckCircle2,
+    XCircle,
+    Trophy,
+    ShieldAlert,
+    Clock,
+    Eye,
     FileText,
     MessageSquare,
     ChevronRight
@@ -28,7 +28,7 @@ const NOTIF_ICONS = {
 };
 
 const NotificationsPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -41,7 +41,7 @@ const NotificationsPage = () => {
         if (min < 60) return t('feed.time.min', { count: min });
         const h = Math.floor(min / 60);
         if (h < 24) return t('feed.time.hour', { count: h });
-        return t('feed.time.day', { count: Math.floor(h / 24) });
+        return new Date(date).toLocaleDateString(i18n.language);
     }
 
     const fetchNotifications = async () => {
@@ -123,9 +123,9 @@ const NotificationsPage = () => {
                                 style={{ borderRadius: 12, marginBottom: 12, padding: 16, border: '1px solid var(--border)', background: 'var(--bg-primary)', cursor: 'pointer', transition: 'all 0.2s' }}
                             >
                                 <div style={{ display: 'flex', gap: 16 }}>
-                                    <div className="notif-icon" style={{ 
-                                        background: iconBg, 
-                                        width: 48, height: 48, borderRadius: 12, 
+                                    <div className="notif-icon" style={{
+                                        background: iconBg,
+                                        width: 48, height: 48, borderRadius: 12,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         flexShrink: 0
                                     }}>
@@ -142,7 +142,7 @@ const NotificationsPage = () => {
                                             )}
                                         </div>
                                         <p className="notif-body" style={{ color: 'var(--text-secondary)', margin: '4px 0 12px', lineHeight: 1.5 }}>{notif.message}</p>
-                                        
+
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                                             {notif.incident && (
                                                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>

@@ -4,18 +4,19 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../utils/dateUtils';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { 
-    Megaphone, 
-    CheckCircle2, 
-    Clock, 
-    Trophy, 
-    BarChart3, 
-    FileText, 
-    PlusCircle, 
-    Bell, 
-    Map as MapIcon, 
-    Layout as FeedIcon, 
+import {
+    Megaphone,
+    CheckCircle2,
+    Clock,
+    Trophy,
+    BarChart3,
+    FileText,
+    PlusCircle,
+    Bell,
+    Map as MapIcon,
+    Layout as FeedIcon,
     Lightbulb,
     ChevronRight,
     Search,
@@ -26,23 +27,24 @@ import {
     ShieldAlert,
     AlertTriangle,
     Zap,
+    Ghost,
     Frown
 } from 'lucide-react';
 
-const STATUS_LABELS = (t) => ({ 
-    pending: t('dashboard.status.pending'), 
-    approved: t('dashboard.status.approved'), 
-    resolved: t('dashboard.status.resolved'), 
-    rejected: t('dashboard.status.rejected') 
+const STATUS_LABELS = (t) => ({
+    pending: t('dashboard.status.pending'),
+    approved: t('dashboard.status.approved'),
+    resolved: t('dashboard.status.resolved'),
+    rejected: t('dashboard.status.rejected')
 });
 
 const CAT_LABELS = (t) => ({
-    theft: t('feed.categories.theft'), 
-    assault: t('feed.categories.assault'), 
+    theft: t('feed.categories.theft'),
+    assault: t('feed.categories.assault'),
     vandalism: t('feed.categories.vandalism'),
-    suspicious_activity: t('feed.categories.suspicious_activity'), 
-    fire: t('feed.categories.fire'), 
-    kidnapping: t('feed.categories.kidnapping'), 
+    suspicious_activity: t('feed.categories.suspicious_activity'),
+    fire: t('feed.categories.fire'),
+    kidnapping: t('feed.categories.kidnapping'),
     other: t('feed.categories.other')
 });
 
@@ -52,7 +54,7 @@ const CAT_ICONS = {
     vandalism: <Hammer size={16} />,
     suspicious_activity: <Eye size={16} />,
     fire: <Flame size={16} />,
-    kidnapping: <ShieldAlert size={16} />,
+    kidnapping: <Ghost size={16} />,
     other: <AlertTriangle size={16} />
 };
 
@@ -63,12 +65,11 @@ const CATEGORY_ICONS = {
     vandalism: Hammer,
     suspicious_activity: Eye,
     fire: Flame,
-    kidnapping: ShieldAlert,
+    kidnapping: Ghost,
     other: AlertTriangle
 };
 
-function buildMonthlyChart(incidents) {
-    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+function buildMonthlyChart(incidents, i18n) {
     const now = new Date();
     return Array.from({ length: 6 }, (_, i) => {
         const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
@@ -76,12 +77,13 @@ function buildMonthlyChart(incidents) {
             const incDate = new Date(inc.createdAt);
             return incDate.getMonth() === d.getMonth() && incDate.getFullYear() === d.getFullYear();
         }).length;
-        return { month: months[d.getMonth()], total: count };
+        const monthName = d.toLocaleString(i18n.language || 'fr', { month: 'short' });
+        return { month: monthName.charAt(0).toUpperCase() + monthName.slice(1), total: count };
     });
 }
 
 const DashboardPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
 
     const [stats, setStats] = useState({ total: 0, approved: 0, pending: 0, resolved: 0, recent: [], chartData: [] });
@@ -97,11 +99,11 @@ const DashboardPage = () => {
                     pending: incidents.filter(i => i.status === 'pending').length,
                     resolved: incidents.filter(i => i.status === 'resolved').length,
                     recent: incidents.slice(0, 6),
-                    chartData: buildMonthlyChart(incidents),
+                    chartData: buildMonthlyChart(incidents, i18n),
                 });
             }
         }).catch(console.error).finally(() => setLoading(false));
-    }, []);
+    }, [i18n.language]);
 
     if (loading) return (
         <div className="page-loader"><div className="spinner" /><p>{t('dashboard.loading') || 'Chargement...'}</p></div>
@@ -115,7 +117,7 @@ const DashboardPage = () => {
         { icon: <Clock size={20} />, label: t('dashboard.stats.pending'), value: stats.pending, bg: 'var(--yellow-bg)', color: 'var(--yellow)' },
         { icon: <Trophy size={20} />, label: t('dashboard.stats.resolved'), value: stats.resolved, bg: 'var(--blue-bg)', color: 'var(--blue)' },
     ];
-    
+
     const currentStatusLabels = STATUS_LABELS(t);
     const currentCatLabels = CAT_LABELS(t);
 
@@ -208,8 +210,8 @@ const DashboardPage = () => {
                                                     </td>
                                                     <td><span className={`badge badge-${inc.category}`}>{currentCatLabels[inc.category] || inc.category}</span></td>
                                                     <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            <Clock size={12} /> {new Date(inc.createdAt).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}
+                                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.73rem', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+                                                            <Clock size={12} /> {formatDate(inc.createdAt, i18n.language)}
                                                         </div>
                                                     </td>
                                                     <td><span className={`badge badge-${inc.status}`}>{currentStatusLabels[inc.status] || inc.status}</span></td>

@@ -3,50 +3,52 @@ import React, { useState, useEffect } from 'react';
 import i18n from '../i18n';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { 
-    Search, 
-    Layout, 
-    ShieldCheck, 
-    ThumbsUp, 
-    MessageSquare, 
-    MapPin, 
-    Clock, 
-    Flame,
-    Car,
-    Hammer,
-    Eye,
-    ShieldAlert,
-    AlertTriangle,
-    FileText,
+import {
+    Search,
+    Layout,
+    ShieldCheck,
+    ThumbsUp,
     Zap,
     ChevronLeft,
     ChevronRight,
     Filter,
-    Ghost
+    Image,
+    Clock,
+    MapPin,
+    MessageSquare,
+    Eye,
+    ShieldAlert,
+    AlertTriangle,
+    Flame,
+    Hammer,
+    Ghost,
+    FileText
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { getImageUrl } from '../utils/imageUtils';
+import { timeAgo } from '../utils/dateUtils';
 
 const IncidentFeedPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const [incidents, setIncidents] = useState([]);
 
-    const CAT_LABELS = { 
-        theft: t('feed.categories.theft'), 
-        assault: t('feed.categories.assault'), 
-        vandalism: t('feed.categories.vandalism'), 
-        suspicious_activity: t('feed.categories.suspicious_activity'), 
-        fire: t('feed.categories.fire'), 
-        kidnapping: t('feed.categories.kidnapping'), 
-        other: t('feed.categories.other') 
+    const CAT_LABELS = {
+        theft: t('feed.categories.theft'),
+        assault: t('feed.categories.assault'),
+        vandalism: t('feed.categories.vandalism'),
+        suspicious_activity: t('feed.categories.suspicious_activity'),
+        fire: t('feed.categories.fire'),
+        kidnapping: t('feed.categories.kidnapping'),
+        other: t('feed.categories.other')
     };
 
-    const SEV_LABELS = { 
-        low: t('feed.severities.low'), 
-        medium: t('feed.severities.medium'), 
-        high: t('feed.severities.high'), 
-        critical: t('feed.severities.critical') 
+    const SEV_LABELS = {
+        low: t('feed.severities.low'),
+        medium: t('feed.severities.medium'),
+        high: t('feed.severities.high'),
+        critical: t('feed.severities.critical')
     };
 
     const CATEGORY_ICONS = {
@@ -59,15 +61,7 @@ const IncidentFeedPage = () => {
         other: AlertTriangle
     };
 
-    const timeAgo = (date) => {
-        const sec = Math.floor((Date.now() - new Date(date)) / 1000);
-        if (sec < 60) return t('feed.time.now');
-        const min = Math.floor(sec / 60);
-        if (min < 60) return t('feed.time.min', { count: min });
-        const h = Math.floor(min / 60);
-        if (h < 24) return t('feed.time.hour', { count: h });
-        return new Date(date).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US');
-    };
+
 
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -120,18 +114,18 @@ const IncidentFeedPage = () => {
                         <p className="page-subtitle" style={{ margin: 0 }}>{t('feed.subtitle')}</p>
                     </div>
                 </div>
-                
+
                 <div className="search-bar-container" style={{ marginTop: 24, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <div className="input-group" style={{ flex: 1, minWidth: 260 }}>
                         <span className="input-icon"><Search size={18} opacity={0.6} /></span>
-                        <input 
-                            type="text" className="form-control" 
-                            placeholder={t('feed.search_placeholder')} 
+                        <input
+                            type="text" className="form-control"
+                            placeholder={t('feed.search_placeholder')}
                             value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
                         />
                     </div>
                     <div style={{ display: 'flex', gap: 12 }}>
-                        <select 
+                        <select
                             className="form-control" style={{ width: 160 }}
                             value={category} onChange={e => { setCategory(e.target.value); setPage(1); }}
                         >
@@ -140,7 +134,7 @@ const IncidentFeedPage = () => {
                                 <option key={val} value={val}>{lab}</option>
                             ))}
                         </select>
-                        <select 
+                        <select
                             className="form-control" style={{ width: 160 }}
                             value={severity} onChange={e => { setSeverity(e.target.value); setPage(1); }}
                         >
@@ -165,15 +159,15 @@ const IncidentFeedPage = () => {
                             const isUpvoted = inc.upvotes?.includes(user?._id);
                             const isPending = inc.status === 'pending';
                             const canVote = user?.role !== 'admin' && isPending;
-                            
+
                             return (
-                                <div 
-                                    key={inc._id} 
-                                    className={`incident-card card glass-hover fade-in ${isPending ? 'pending-bright' : ''}`} 
-                                    style={{ 
-                                        height: '100%', 
-                                        display: 'flex', 
-                                        flexDirection: 'column', 
+                                <div
+                                    key={inc._id}
+                                    className={`incident-card card glass-hover fade-in ${isPending ? 'pending-bright' : ''}`}
+                                    style={{
+                                        height: '100%',
+                                        display: 'flex',
+                                        flexDirection: 'column',
                                         opacity: inc.status === 'approved' ? 0.95 : 1,
                                         border: isPending ? '2px solid var(--brand-orange)' : '1px solid var(--border)',
                                         boxShadow: isPending ? '0 8px 30px rgba(232,84,26,0.15)' : 'var(--shadow-sm)'
@@ -195,10 +189,10 @@ const IncidentFeedPage = () => {
                                             <span className={`badge badge-${inc.category}`} style={{ fontSize: '0.65rem' }}>{CAT_LABELS[inc.category]}</span>
                                             <span className={`badge badge-${inc.severity}`} style={{ fontSize: '0.65rem' }}>{SEV_LABELS[inc.severity]}</span>
                                             {inc.status === 'pending' && (
-                                                <span className="badge" style={{ 
-                                                    fontSize: '0.65rem', 
-                                                    background: 'var(--brand-orange)', 
-                                                    color: 'white', 
+                                                <span className="badge" style={{
+                                                    fontSize: '0.65rem',
+                                                    background: 'var(--brand-orange)',
+                                                    color: 'white',
                                                     border: 'none',
                                                     fontWeight: 800,
                                                     padding: '4px 8px',
@@ -209,7 +203,7 @@ const IncidentFeedPage = () => {
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     <div style={{ padding: '0 20px 16px', flex: 1 }}>
                                         <p className="incident-card-desc" style={{ fontSize: '0.85rem', lineHeight: 1.5, color: 'var(--text-secondary)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                             {inc.description}
@@ -218,25 +212,30 @@ const IncidentFeedPage = () => {
 
                                     {inc.images && inc.images.length > 0 && (
                                         <div style={{ padding: '0 20px 16px' }}>
-                                            <img src={inc.images[0]} alt="Incident" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 12 }} />
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px', background: 'var(--bg-secondary)', borderRadius: 8 }}>
+                                                <Image size={16} color="var(--brand-orange)" />
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                    {inc.images.length} {inc.images.length === 1 ? t('feed.photo') : t('feed.photos')}
+                                                </span>
+                                            </div>
                                         </div>
                                     )}
 
-                                    <div className="incident-card-footer" style={{ padding: '12px 20px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)', borderRadius: '0 0 16px 16px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                                    <div className="incident-card-footer" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', padding: '0', borderTop: 'none', background: 'transparent', borderRadius: '0 0 16px 16px', overflow: 'hidden' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '12px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
                                             <div style={{ display: 'flex', gap: 12 }}>
-                                                <button 
+                                                <button
                                                     className={`action-btn ${isUpvoted ? 'active' : ''}`}
                                                     onClick={(e) => { e.preventDefault(); if (canVote) handleUpvote(inc._id); }}
                                                     disabled={!canVote}
-                                                    style={{ 
-                                                        display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', 
-                                                        cursor: canVote ? 'pointer' : 'not-allowed', 
-                                                        color: isUpvoted ? 'var(--brand-orange)' : 'var(--text-muted)', 
+                                                    style={{
+                                                        display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none',
+                                                        cursor: canVote ? 'pointer' : 'not-allowed',
+                                                        color: isUpvoted ? 'var(--brand-orange)' : 'var(--text-muted)',
                                                         fontSize: '0.75rem', fontWeight: 600,
                                                         opacity: canVote ? 1 : 0.5
                                                     }}
-                                                    title={!canVote ? (user?.role === 'admin' ? "L'admin ne peut pas voter" : "Incident déjà approuvé") : "Confirmer"}
+                                                    title={!canVote ? (user?.role === 'admin' ? t('feed.confirmations.admin_tooltip') : t('feed.confirmations.already_approved_tooltip')) : t('feed.confirmations.confirm_tooltip')}
                                                 >
                                                     <ThumbsUp size={14} fill={isUpvoted ? 'currentColor' : 'none'} />
                                                     <span>{inc.upvotes?.length || 0}</span>
@@ -247,16 +246,43 @@ const IncidentFeedPage = () => {
                                                 </Link>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                                <Clock size={10} /> {timeAgo(inc.createdAt)}
+                                                <Clock size={10} /> {timeAgo(inc.createdAt, t, i18n.language)}
                                             </div>
                                         </div>
+                                        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                                            <Link
+                                                to={`/incidents/${inc._id}`}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: 8,
+                                                    textDecoration: 'none',
+                                                    color: 'white',
+                                                    background: 'var(--brand-orange)',
+                                                    padding: '10px 16px',
+                                                    borderRadius: 8,
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 600,
+                                                    width: '100%',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                                onMouseOver={e => e.target.style.background = 'var(--brand-orange-dark)'}
+                                                onMouseOut={e => e.target.style.background = 'var(--brand-orange)'}
+                                            >
+                                                <Eye size={16} />
+                                                {t('feed.view_details')}
+                                            </Link>
+                                        </div>
                                         {inc.status === 'approved' ? (
-                                            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, color: '#10B981', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', borderTop: '1px solid rgba(16,185,129,0.1)', paddingTop: 8 }}>
-                                                <ShieldCheck size={12} /> {t('feed.verified_badge')}
+                                            <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', gap: 6, color: '#10B981', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', background: 'var(--bg-secondary)' }}>
+                                                <div style={{ borderTop: '1px dashed rgba(16,185,129,0.2)', width: '100%', paddingTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                    <ShieldCheck size={12} /> {t('feed.verified_badge')}
+                                                </div>
                                             </div>
                                         ) : (
-                                            <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand-orange)', fontSize: '0.65rem', fontWeight: 700 }}>
-                                                <Zap size={12} fill="var(--brand-orange)" /> {t('feed.confirmations', { count: inc.upvotes?.length || 0 })}
+                                            <div style={{ padding: '0 20px 20px', display: 'flex', alignItems: 'center', gap: 6, color: 'var(--brand-orange)', fontSize: '0.65rem', fontWeight: 700, background: 'var(--bg-secondary)' }}>
+                                                <Zap size={12} fill="var(--brand-orange)" /> {t('feed.confirmations.upvotes', { count: inc.upvotes?.length || 0 })}
                                                 <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden', marginLeft: 8 }}>
                                                     <div style={{ width: `${Math.min((inc.upvotes?.length || 0) * 20, 100)}%`, height: '100%', background: 'var(--brand-orange)' }} />
                                                 </div>
@@ -275,8 +301,8 @@ const IncidentFeedPage = () => {
                                 <ChevronLeft size={18} />
                             </button>
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                                <button key={p} className={`page-btn ${page === p ? 'active' : ''}`} onClick={() => setPage(p)} style={{ 
-                                    padding: '8px 16px', borderRadius: 8, border: '1.5px solid var(--border)', 
+                                <button key={p} className={`page-btn ${page === p ? 'active' : ''}`} onClick={() => setPage(p)} style={{
+                                    padding: '8px 16px', borderRadius: 8, border: '1.5px solid var(--border)',
                                     background: page === p ? 'var(--brand-orange)' : 'var(--bg-primary)',
                                     color: page === p ? 'white' : 'var(--text-primary)',
                                     fontWeight: 700, cursor: 'pointer'
@@ -302,7 +328,7 @@ const IncidentFeedPage = () => {
                     </button>
                 </div>
             )}
-            
+
             <Link to="/report" className="fab-button" title={t('nav.report_incident')} style={{ position: 'fixed', bottom: 32, right: 32, width: 56, height: 56, borderRadius: '50%', background: 'var(--brand-orange)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(232,84,26,0.4)', transition: 'transform 0.2s' }}>
                 <Zap size={24} fill="white" />
             </Link>

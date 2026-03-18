@@ -24,7 +24,7 @@ const ForgotPasswordPage = () => {
             setMessage(data.message);
             setSubmitted(true);
         } catch (err) {
-            setError(err.response?.data?.message || t('profile.fields.error_save'));
+            setError(err.response?.data?.message || t('auth.forgot.error_forgot'));
         } finally {
             setLoading(false);
         }
@@ -37,7 +37,7 @@ const ForgotPasswordPage = () => {
                     <div className="auth-left-logo-icon">
                         <Zap size={24} fill="var(--brand-orange)" color="var(--brand-orange)" />
                     </div>
-                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem' }}>CS Alert</span>
+                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem' }}>{t('nav.brand_name')}</span>
 
                 </div>
             </div>
@@ -67,7 +67,7 @@ const ForgotPasswordPage = () => {
                                         <input
                                             className="form-control"
                                             type="email" id="email"
-                                            placeholder="votre@email.com"
+                                            placeholder={t('auth.register.placeholders.email')}
                                             value={email}
                                             onChange={e => setEmail(e.target.value)}
                                             required

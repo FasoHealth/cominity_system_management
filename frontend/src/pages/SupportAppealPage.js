@@ -1,27 +1,28 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-    ShieldAlert, 
-    Search, 
-    ArrowLeft, 
-    AlertCircle, 
-    CheckCircle,
+import {
+    ShieldAlert,
+    Search,
+    ArrowLeft,
+    AlertCircle,
+    CheckCircle2,
     MessageSquare,
     Clock
 } from 'lucide-react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../utils/dateUtils';
 import i18n from '../i18n';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 
 const SupportAppealPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState({ type: '', text: '' });
-    
+
     // Status Check State
     const [checkEmail, setCheckEmail] = useState('');
     const [appeals, setAppeals] = useState(null);
@@ -48,9 +49,9 @@ const SupportAppealPage = () => {
                 setMessage('');
             }
         } catch (err) {
-            setStatus({ 
-                type: 'error', 
-                text: err.response?.data?.message || t('profile.fields.error_save') 
+            setStatus({
+                type: 'error',
+                text: err.response?.data?.message || t('profile.fields.error_save')
             });
         } finally {
             setLoading(false);
@@ -76,7 +77,7 @@ const SupportAppealPage = () => {
     return (
         <div className="page-container fade-in" style={{ maxWidth: 800, margin: '40px auto' }}>
             <div className="grid-2-support" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '24px' }}>
-                
+
                 {/* Section Formulaire */}
                 <div className="card">
                     <div style={{ padding: 24 }}>
@@ -92,7 +93,7 @@ const SupportAppealPage = () => {
 
                         {status.text && (
                             <div className={`alert alert-${status.type}`} style={{ marginBottom: 20, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                {status.type === 'error' ? <AlertCircle size={16} /> : <CheckCircle size={16} />} 
+                                {status.type === 'error' ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
                                 {status.text}
                             </div>
                         )}
@@ -100,10 +101,10 @@ const SupportAppealPage = () => {
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label className="form-label">{t('support.email')}</label>
-                                <input 
-                                    className="form-control" type="email" 
-                                    placeholder="votre@email.com" value={email} 
-                                    onChange={e => setEmail(e.target.value)} required 
+                                <input
+                                    className="form-control" type="email"
+                                    placeholder="votre@email.com" value={email}
+                                    onChange={e => setEmail(e.target.value)} required
                                 />
                             </div>
                             <div className="form-group">
@@ -113,15 +114,15 @@ const SupportAppealPage = () => {
                                         {message.length}/2000
                                     </span>
                                 </label>
-                                <textarea 
-                                    className="form-control" rows="4" 
-                                    placeholder={t('support.message') + "..."} 
+                                <textarea
+                                    className="form-control" rows="4"
+                                    placeholder={t('support.message') + "..."}
                                     value={message} onChange={e => setMessage(e.target.value)} required
                                     maxLength={2000}
                                 />
                             </div>
                             <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
-                                {loading ? '...' : t('support.submit')}
+                                {loading ? t('profile.fields.loading') : t('support.submit')}
                             </button>
                         </form>
                     </div>
@@ -139,13 +140,13 @@ const SupportAppealPage = () => {
 
                         <form onSubmit={handleCheckStatus} style={{ marginBottom: 20 }}>
                             <div className="input-group-custom" style={{ display: 'flex', gap: 8 }}>
-                                <input 
-                                    className="form-control" type="email" 
-                                    placeholder={t('support.email')} value={checkEmail} 
-                                    onChange={e => setCheckEmail(e.target.value)} required 
+                                <input
+                                    className="form-control" type="email"
+                                    placeholder={t('support.email')} value={checkEmail}
+                                    onChange={e => setCheckEmail(e.target.value)} required
                                 />
                                 <button className="btn btn-secondary" type="submit" disabled={checking}>
-                                    {checking ? '...' : t('support.verify')}
+                                    {checking ? t('profile.fields.loading') : t('support.verify')}
                                 </button>
                             </div>
                         </form>
@@ -163,15 +164,15 @@ const SupportAppealPage = () => {
                                 </div>
                             ) : (
                                 appeals.map((a, i) => (
-                                    <div key={i} className="status-item" style={{ 
-                                        padding: 12, borderRadius: 8, background: 'white', 
-                                        marginBottom: 10, border: '1px solid var(--border)' 
+                                    <div key={i} className="status-item" style={{
+                                        padding: 12, borderRadius: 8, background: 'white',
+                                        marginBottom: 10, border: '1px solid var(--border)'
                                     }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                             <span style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.5, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                <Clock size={10} /> {new Date(a.createdAt).toLocaleDateString()}
+                                                <Clock size={10} /> {formatDate(a.createdAt, i18n.language)}
                                             </span>
-                                            <span style={{ 
+                                            <span style={{
                                                 fontSize: '0.65rem', padding: '2px 6px', borderRadius: 4,
                                                 background: a.status === 'pending' ? 'var(--yellow-bg)' : 'var(--green-bg)',
                                                 color: a.status === 'pending' ? 'var(--yellow)' : 'var(--green)'
@@ -196,7 +197,7 @@ const SupportAppealPage = () => {
                 </div>
 
             </div>
-            
+
             <div style={{ marginTop: 24, textAlign: 'center' }}>
                 <Link to="/login" style={{ color: 'var(--brand-orange)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                     <ArrowLeft size={18} /> {t('support.back_to_login')}

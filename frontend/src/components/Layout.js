@@ -1,20 +1,20 @@
 // frontend/src/components/Layout.js
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom';
-import { 
-    Newspaper, 
-    LayoutDashboard, 
-    Map as MapIcon, 
-    Folder, 
-    Bell, 
-    User, 
-    Shield, 
-    ClipboardList, 
-    UserCheck, 
-    BookOpen, 
-    Users, 
-    Zap, 
-    ChevronLeft, 
+import {
+    Newspaper,
+    LayoutDashboard,
+    Map as MapIcon,
+    Folder,
+    Bell,
+    User,
+    Shield,
+    ClipboardList,
+    UserCheck,
+    BookOpen,
+    Users,
+    Zap,
+    ChevronLeft,
     ChevronRight,
     Moon,
     Sun,
@@ -103,33 +103,34 @@ const Layout = () => {
                 title={collapsed ? label : ''}
                 className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
             >
-            <span className="sidebar-link-icon">
-                {icon}
-                {to === '/notifications' && unreadNotifs > 0 && (
-                    <span style={{
-                        position: 'absolute',
-                        top: -4,
-                        right: -4,
-                        width: 8,
-                        height: 8,
-                        background: 'var(--brand-orange)',
-                        borderRadius: '50%',
-                        border: '2px solid var(--bg-primary)'
-                    }} />
-                )}
-            </span>
-            {!collapsed && (
-                <span className="sidebar-link-text" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                    {label}
-                    {to === '/notifications' && unreadNotifs > 0 && !collapsed && (
-                        <span className="badge badge-error" style={{ fontSize: '0.65rem', padding: '1px 6px', height: 'auto', background: 'var(--brand-orange)', border: 'none' }}>
-                            {unreadNotifs}
-                        </span>
+                <span className="sidebar-link-icon">
+                    {icon}
+                    {to === '/notifications' && unreadNotifs > 0 && (
+                        <span style={{
+                            position: 'absolute',
+                            top: -4,
+                            right: -4,
+                            width: 8,
+                            height: 8,
+                            background: 'var(--brand-orange)',
+                            borderRadius: '50%',
+                            border: '2px solid var(--bg-primary)'
+                        }} />
                     )}
                 </span>
-            )}
-        </NavLink>
-    ); };
+                {!collapsed && (
+                    <span className="sidebar-link-text" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        {label}
+                        {to === '/notifications' && unreadNotifs > 0 && !collapsed && (
+                            <span className="badge badge-error" style={{ fontSize: '0.65rem', padding: '1px 6px', height: 'auto', background: 'var(--brand-orange)', border: 'none' }}>
+                                {unreadNotifs}
+                            </span>
+                        )}
+                    </span>
+                )}
+            </NavLink>
+        );
+    };
 
     return (
         <div className="app-layout">
@@ -173,7 +174,7 @@ const Layout = () => {
                     <div className="sidebar-section-title" style={{ marginTop: 8 }}>
                         {collapsed ? '·' : t('nav.preferences')}
                     </div>
-                    
+
                     {!collapsed && (
                         <div style={{ padding: '0 8px', marginBottom: 8 }}>
                             <LanguageSwitcher />
@@ -217,7 +218,7 @@ const Layout = () => {
                     <div className="sidebar-user">
                         <div className="sidebar-avatar">
                             {user?.avatar ? (
-                                <img src={`${process.env.REACT_APP_API_URL || ''}${user.avatar}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                                <img src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${user.avatar}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
                             ) : (
                                 user?.name?.charAt(0).toUpperCase() || 'U'
                             )}
@@ -227,9 +228,9 @@ const Layout = () => {
                                 <div className="sidebar-user-name">{user?.name}</div>
                                 <div className="sidebar-user-role">
                                     {user?.role === 'admin' ? (
-                                        <><Shield size={12} style={{ marginRight: 4 }} /> {t('auth.register.admin') || 'Admin'}</>
+                                        <><Shield size={12} style={{ marginRight: 4 }} /> {t('auth.roles.admin')}</>
                                     ) : (
-                                        <><User size={12} style={{ marginRight: 4 }} /> {t('auth.register.citizen')}</>
+                                        <><User size={12} style={{ marginRight: 4 }} /> {t('auth.roles.citizen')}</>
                                     )}
                                 </div>
                             </div>

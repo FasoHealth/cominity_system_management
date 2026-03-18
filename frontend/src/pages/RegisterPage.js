@@ -1,15 +1,15 @@
 // frontend/src/pages/RegisterPage.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-    Zap, 
-    User, 
-    Mail, 
-    Phone, 
-    Lock, 
-    ShieldAlert, 
-    Users, 
-    CheckCircle2, 
+import {
+    Zap,
+    User,
+    Mail,
+    Phone,
+    Lock,
+    ShieldAlert,
+    Users,
+    CheckCircle2,
     AlertCircle,
     ArrowRight
 } from 'lucide-react';
@@ -73,7 +73,7 @@ const RegisterPage = () => {
             if (err.response?.data?.errors) {
                 setError(err.response.data.errors.map(e => e.message).join('. '));
             } else {
-                setError(err.response?.data?.message || t('auth.register.error_signup','Erreur lors de l\'inscription.'));
+                setError(err.response?.data?.message || t('auth.register.error_signup', 'Erreur lors de l\'inscription.'));
             }
         } finally {
             setLoading(false);
@@ -88,7 +88,7 @@ const RegisterPage = () => {
                     <div className="auth-left-logo-icon">
                         <Zap size={24} fill="var(--brand-orange)" color="var(--brand-orange)" />
                     </div>
-                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>CS Alert</span>
+                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>{t('nav.brand_name')}</span>
 
                 </div>
 
@@ -97,8 +97,8 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="auth-left-tagline" style={{ color: '#222' }}>
-                    {t('auth.login.tagline_1','Votre sécurité,')}<br />
-                    <span style={{ color: '#222', opacity: 0.7 }}>{t('auth.login.tagline_2','notre communauté.')}</span>
+                    {t('auth.login.tagline_1', 'Votre sécurité,')}<br />
+                    <span style={{ color: '#222', opacity: 0.7 }}>{t('auth.login.tagline_2', 'notre communauté.')}</span>
                 </div>
             </div>
 
@@ -121,7 +121,7 @@ const RegisterPage = () => {
                                 <label className="form-label" htmlFor="name" style={{ color: '#222' }}>
                                     {t('auth.register.full_name')}
                                     <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
-                                        (Min. 2) • {form.name.length}/50
+                                        {t('auth.register.name_hint', { count: form.name.length })}
                                     </span>
                                 </label>
                                 <div className="input-group">
@@ -133,7 +133,7 @@ const RegisterPage = () => {
                                 </div>
                             </div>
                             <div className="form-group">
-                                <label className="form-label" htmlFor="phone" style={{ color: '#222' }}>{t('auth.register.phone')} <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem' }}>{t('auth.register.optional')}</span></label>
+                                <label className="form-label" htmlFor="phone" style={{ color: '#222' }}>{t('auth.register.phone')} <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem' }}>{t('auth.register.phone_hint')}</span></label>
                                 <div className="input-group">
                                     <span className="input-icon"><Phone size={18} opacity={0.5} /></span>
                                     <input className="form-control" type="tel" id="phone" name="phone"
@@ -165,7 +165,7 @@ const RegisterPage = () => {
                                         onChange={handleChange} required minLength={8} />
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>
-                                    {t('auth.register.min_chars')}
+                                    {t('auth.register.min_chars_prompt')}
                                 </div>
                             </div>
                             <div className="form-group">

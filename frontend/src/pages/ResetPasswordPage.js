@@ -44,7 +44,7 @@ const ResetPasswordPage = () => {
                     <div className="auth-left-logo-icon">
                         <Zap size={24} fill="var(--brand-orange)" color="var(--brand-orange)" />
                     </div>
-                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem' }}>CS Alert</span>
+                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem' }}>{t('nav.brand_name')}</span>
 
                 </div>
             </div>
@@ -71,7 +71,7 @@ const ResetPasswordPage = () => {
                                             className="form-control"
                                             type={showPwd ? 'text' : 'password'}
                                             id="password"
-                                            placeholder="Min. 8 caractères"
+                                            placeholder={t('auth.register.min_chars')}
                                             value={password}
                                             onChange={e => setPassword(e.target.value)}
                                             required

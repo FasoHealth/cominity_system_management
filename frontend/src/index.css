@@ -2194,17 +2194,16 @@ tbody tr {
 
 /* ── Language Switcher Floating ── */
 .lang-switcher-floating {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
     display: flex;
+    justify-content: center;
     background: var(--bg-secondary);
     border: 1.5px solid var(--brand-orange);
     border-radius: 30px;
     padding: 3px;
-    box-shadow: var(--shadow-md);
+    width: fit-content;
+    box-shadow: var(--shadow-sm);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin: 0 auto 12px;
 }
 
 .lang-switcher-floating:hover {
@@ -2241,4 +2240,4 @@ tbody tr {
 .lang-flag {
     font-size: 1rem;
 }
-
+

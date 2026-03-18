@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // ── Configuration Axios globale ───────────────────────────────────────────────
 // configuration axios globale — on utilise le proxy de package.json en développement
-axios.defaults.baseURL = process.env.REACT_APP_API_URL || '';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const AuthContext = createContext(null);
 

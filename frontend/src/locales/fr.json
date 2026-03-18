@@ -1,5 +1,6 @@
 {
   "nav": {
+    "brand_name": "CS Alert",
     "login": "Connexion",
     "register": "Inscription",
     "dashboard": "Tableau de bord",
@@ -42,7 +43,9 @@
       "error_login": "Identifiants invalides.",
       "tagline_1": "Votre sécurité,",
       "tagline_2": "notre communauté.",
-      "contact_admin": "Contacter un administrateur"
+      "contact_admin": "Contacter un administrateur",
+      "logging_in": "Connexion en cours...",
+      "email_invalid": "Veuillez entrer une adresse e-mail valide."
     },
     "register": {
       "title": "Créer un compte",
@@ -57,9 +60,12 @@
       "tagline_1": "Plus forts",
       "tagline_2": "ensemble.",
       "error_signup": "Erreur lors de l'inscription.",
-      "error_mismatch": "Les mots de passe ne correspondent pas.",
-      "error_invalid_email": "Veuillez entrer une adresse e-mail valide.",
-      "error_register": "Échec de l'inscription.",
+      "error_password_mismatch": "Les mots de passe ne correspondent pas.",
+      "error_name_short": "Le nom est trop court (min 2 caractères).",
+      "error_password_requirement": "Le mot de passe doit faire au moins 8 caractères et inclure un chiffre.",
+      "min_chars_prompt": "8 caract. min + 1 chiffre",
+      "name_hint": "(Min. 2) • {{count}}/50",
+      "phone_hint": "(optionnel)",
       "full_name": "Nom complet",
       "phone": "Numéro de téléphone",
       "optional": "(optionnel)",
@@ -69,9 +75,6 @@
         "phone": "07 00 00 00 00",
         "email": "votre@email.com"
       },
-
-
-
       "citizen": "Citoyen",
       "admin": "Administrateur",
       "creating": "Création du compte...",
@@ -83,7 +86,8 @@
       "title": "Mot de passe oublié ?",
       "subtitle": "Entrez votre adresse mail pour recevoir un lien de réinitialisation.",
       "send_btn": "Envoyer le lien",
-      "success_title": "Vérifiez vos emails"
+      "success_title": "Vérifiez vos emails",
+      "error_forgot": "Échec de l'envoi du lien."
     },
     "reset": {
       "title": "Nouveau mot de passe",
@@ -100,6 +104,7 @@
   },
   "chat": {
     "official_title": "Conversation Officielle",
+    "administration": "ADMINISTRATION",
     "support_role": "Support Citoyen",
     "admin_discussion": "Discussion avec l'Administration",
     "empty_title": "Aucun message",
@@ -115,6 +120,13 @@
       "approved": "Visibles",
       "pending": "En attente",
       "resolved": "Résolues"
+    },
+    "loading": "Chargement du tableau de bord...",
+    "status": {
+      "pending": "En attente",
+      "approved": "Approuvé",
+      "resolved": "Résolu",
+      "rejected": "Rejeté"
     },
     "chart": {
       "title": "Activité récente",
@@ -154,6 +166,11 @@
     "reset_filters": "Réinitialiser",
     "loading": "Chargement des alertes...",
     "no_incidents": "Aucun incident trouvé.",
+    "empty_title": "Aucune alerte correspondante",
+    "empty_desc": "Nous n'avons trouvé aucun incident correspondant à vos critères.",
+    "filters": {
+      "all": "Tous"
+    },
     "categories": {
       "all": "Toutes les catégories",
       "theft": "Vol",
@@ -184,29 +201,52 @@
       "day": "Il y a {{count}}j"
     },
     "confirmations": {
-        "title": "Confirmations",
-        "upvotes": "confirmé par {{count}} personnes",
-        "be_first": "Soyez le premier à confirmer"
+      "title": "Confirmations",
+      "upvotes": "confirmé par {{count}} personnes",
+      "be_first": "Soyez le premier à confirmer",
+      "admin_tooltip": "L'admin ne peut pas voter",
+      "already_approved_tooltip": "Incident déjà approuvé",
+      "confirm_tooltip": "Confirmer"
     },
+    "pending_badge": "En attente",
+    "photo": "photo",
+    "photos": "photos",
+    "view_details": "Voir détails",
     "verified_badge": "Vérifié"
-
   },
   "incident": {
     "detail": {
       "loading": "Chargement des détails...",
       "error": "Incident introuvable ou erreur de chargement.",
       "back_to_feed": "Retour au flux",
-      "reported_on": "Signalé le",
+      "reported_on": "Signalé le {{date}} par {{name}}",
       "anonymous": "Utilisateur anonyme",
       "mark_resolved": "Marquer comme résolu",
       "confirm_resolve": "Voulez-vous vraiment marquer cet incident comme résolu ?",
+      "resolve_error": "Erreur lors de la résolution de l'incident.",
       "security_tips": "Conseils de sécurité",
       "quick_reaction": "Réaction rapide",
       "reaction_desc": "Gardez une distance de sécurité et prévenez les autorités si nécessaire.",
       "live_discussion": "Discussion en direct",
       "no_messages": "Aucun message pour l'instant.",
       "type_message": "Tapez votre message...",
-      "send": "Envoyer"
+      "send": "Envoyer",
+      "description": "Description",
+      "location": "Localisation",
+      "unspecified_city": "Ville non spécifiée",
+      "no_coords": "Coordonnées GPS non disponibles pour cet incident.",
+      "photos": "Photos",
+      "security_tip": "Conseil de sécurité",
+      "security_tip_desc": "Gardez une distance de sécurité et prévenez les autorités si nécessaire.",
+      "confirm_incident": "Confirmer l'incident",
+      "confirmed": "Confirmé",
+      "more_for_validation": "Plus que {{count}} confirmations pour validation",
+      "vote_admin_tooltip": "L'admin ne peut pas voter",
+      "vote_not_pending_tooltip": "L'incident n'est plus en attente",
+      "auto_approved_msg": "Grâce à votre confirmation, cet incident est maintenant officiellement validé !",
+      "error_load": "Erreur lors du chargement",
+      "not_found": "Incident non trouvé",
+      "anonymous_user": "Utilisateur anonyme"
     },
     "report": {
       "title": "Signaler un incident",
@@ -280,7 +320,9 @@
     "user_popup": "Vous êtes ici",
     "details_btn": "Détails",
     "report_cta": "SIGNALER UN INCIDENT",
-    "legend_gravity": "Gravité"
+    "legend_gravity": "Gravité",
+    "unit_m": "m",
+    "unit_km": "km"
   },
   "profile": {
     "title": "Paramètres du profil",
@@ -304,7 +346,9 @@
       "city_placeholder": "Ouagadougou",
       "save_btn": "Sauvegarder mon profil",
       "loading": "Chargement...",
-      "error_save": "Erreur lors de la sauvegarde."
+      "error_save": "Erreur lors de la sauvegarde.",
+      "status_on": "Activé",
+      "status_off": "Désactivé"
     },
     "notifications": {
       "title": "Préférences de notification",
@@ -354,7 +398,7 @@
     },
     "table": {
       "incident": "Incident",
-      "category": "Catégorie",
+      "category": "Catégorie / Niveau",
       "location": "Lieu",
       "date": "Date",
       "status": "Statut",
@@ -403,49 +447,76 @@
       "votes": "{{count}} votes"
     },
     "users": {
-        "title": "Utilisateurs",
-        "total_hint": "{{count}} au total",
-        "search_placeholder": "Rechercher...",
-        "new_btn": "Nouvel Utilisateur",
-        "loading": "Chargement de l'annuaire...",
-        "table": {
-            "user": "UTILISATEUR",
-            "email": "EMAIL",
-            "role": "RÔLE",
-            "status": "STATUT",
-            "date": "INSCRIT LE",
-            "reports": "SIGNALEMENTS"
-        },
-        "roles": {
-            "admin": "Admin",
-            "moderator": "Modérateur",
-            "citizen": "Citoyen"
-        },
-        "stats": {
-            "active": "Comptes Actifs",
-            "banned": "Bannis / Inactifs",
-            "new_month": "Nouveaux ce mois"
-        },
-        "pagination_hint": "Affichage de {{start}}-{{end}} sur {{total}}"
+      "title": "Utilisateurs",
+      "total_hint": "{{count}} au total",
+      "search_placeholder": "Rechercher...",
+      "new_btn": "Nouvel Utilisateur",
+      "loading": "Chargement de l'annuaire...",
+      "table": {
+        "user": "Utilisateur",
+        "email": "E-mail",
+        "role": "Rôle",
+        "status": "Statut",
+        "date": "Date",
+        "reports": "Signalements"
+      },
+      "roles": {
+        "admin": "Admin",
+        "moderator": "Modérateur",
+        "citizen": "Citoyen"
+      },
+      "stats": {
+        "active": "Membres actifs",
+        "banned": "Comptes bannis",
+        "new_month": "Nouveaux du mois"
+      },
+      "pagination_hint": "Affichage {{start}}–{{end}} sur {{total}}"
     },
     "appeals": {
-        "title": "Recours de compte",
-        "subtitle": "Gérez les demandes de réactivation des utilisateurs bannis.",
-        "empty_title": "Aucune demande en attente",
-        "empty_desc": "Tout semble en ordre ! Revenez plus tard.",
-        "user_msg": "Message de l'utilisateur :",
-        "admin_reply": "Réponse admin",
-        "reactivate": "Réactiver le compte",
-        "reply": "Répondre",
-        "edit_reply": "Modifier la réponse",
-        "replied": "RÉPONDU",
-        "resolved": "RÉSOLU",
-        "confirm_reactivate": "Voulez-vous vraiment réactiver le compte de {{name}} ?",
-        "reactivate_msg": "Votre compte a été réactivé. Vous pouvez vous connecter.",
-        "reactivate_success": "Compte réactivé avec succès !",
-        "unknown_user": "Utilisateur inconnu",
-        "reply_placeholder": "Tapez votre réponse pour l'utilisateur..."
+      "title": "Recours de compte",
+      "subtitle": "Gérez les demandes de réactivation des utilisateurs bannis.",
+      "empty_title": "Aucune demande en attente",
+      "empty_desc": "Tout semble en ordre ! Revenez plus tard.",
+      "user_msg": "Message de l'utilisateur :",
+      "admin_reply": "Réponse admin",
+      "reactivate": "Réactiver le compte",
+      "reply": "Répondre",
+      "edit_reply": "Modifier la réponse",
+      "replied": "RÉPONDU",
+      "resolved": "RÉSOLU",
+      "confirm_reactivate": "Voulez-vous vraiment réactiver le compte de {{name}} ?",
+      "reactivate_msg": "Votre compte a été réactivé. Vous pouvez vous connecter.",
+      "reactivate_success": "Compte réactivé avec succès !",
+      "unknown_user": "Utilisateur inconnu",
+      "reply_placeholder": "Tapez votre réponse pour l'utilisateur..."
+    }
+  },
+  "landing": {
+    "app_title": "CS Alert Mobile",
+    "app_subtitle": "Plus rapide, notifications push",
+    "app_install": "Installer",
+    "app_download_alert": "Le lien de téléchargement (Play Store / App Store) sera bientôt disponible !",
+    "nav_login": "Se connecter",
+    "hero_tag": "Plateforme citoyenne de sécurité",
+    "hero_title_1": "Ensemble, rendons notre",
+    "hero_title_2": "communauté plus sûre.",
+    "hero_desc": "Community Security Alert vous permet de signaler instantanément des incidents de sécurité, d'être alerté en temps réel et de protéger vos proches.",
+    "hero_report_btn": "Signaler un incident",
+    "hero_join_btn": "Rejoindre la communauté",
+    "feature_realtime_title": "Alertes en temps réel",
+    "feature_realtime_desc": "Soyez informé instantanément des incidents signalés dans votre zone géographique pour rester en sécurité.",
+    "feature_map_title": "Cartographie précise",
+    "feature_map_desc": "Visualisez les zones à risque sur une carte interactive mise à jour par les citoyens et modérée par nos équipes.",
+    "feature_mod_title": "Modération fiable",
+    "feature_mod_desc": "Un système de validation par la communauté garantit la fiabilité des alertes pour éviter les fausses informations.",
+    "footer": "© {{year}} Community Security Alert - CS27 Groupe 16. Tous droits réservés."
+  },
+  "app": {
+    "install_prompt": {
+      "title": "Application Mobile",
+      "desc": "Recevez des alertes en temps réel et protégez vos proches.",
+      "btn": "Télécharger l'App",
+      "close": "Fermer"
     }
   }
 }
-

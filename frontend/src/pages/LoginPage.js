@@ -1,13 +1,13 @@
 // frontend/src/pages/LoginPage.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-    Zap, 
-    Mail, 
-    Lock, 
-    Eye, 
-    EyeOff, 
-    ShieldAlert, 
+import {
+    Zap,
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    ShieldAlert,
     AlertCircle,
     ChevronRight
 } from 'lucide-react';
@@ -64,14 +64,14 @@ const LoginPage = () => {
                     <div className="auth-left-logo-icon">
                         <Zap size={24} fill="var(--brand-orange)" color="var(--brand-orange)" />
                     </div>
-                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>CS Alert</span>
+                    <span style={{ fontWeight: 700, color: '#222', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>{t('nav.brand_name')}</span>
 
                 </div>
 
                 <div className="auth-left-art">
-                    <img 
-                        src="/memorial.jpg" 
-                        alt="Memorial" 
+                    <img
+                        src="/memorial.jpg"
+                        alt="Memorial"
                         style={{
                             width: '100%',
                             maxWidth: '320px',
@@ -79,13 +79,13 @@ const LoginPage = () => {
                             boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
                             display: 'block',
                             margin: '0 auto'
-                        }} 
+                        }}
                     />
                 </div>
 
                 <div className="auth-left-tagline" style={{ color: '#222' }}>
-                    {t('auth.login.tagline_1','Votre sécurité,')}<br />
-                    <span style={{ color: '#222', opacity: 0.7 }}>{t('auth.login.tagline_2','notre communauté.')}</span>
+                    {t('auth.login.tagline_1', 'Votre sécurité,')}<br />
+                    <span style={{ color: '#222', opacity: 0.7 }}>{t('auth.login.tagline_2', 'notre communauté.')}</span>
                 </div>
             </div>
 
@@ -105,7 +105,7 @@ const LoginPage = () => {
                             </div>
                             {(error.includes('désactivé') || error.includes('disabled')) && (
                                 <Link to="/support-appeal" className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start', background: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <ShieldAlert size={16} /> {t('auth.login.contact_admin','Contacter un administrateur')}
+                                    <ShieldAlert size={16} /> {t('auth.login.contact_admin', 'Contacter un administrateur')}
                                 </Link>
                             )}
                         </div>
@@ -121,7 +121,7 @@ const LoginPage = () => {
                                 <input
                                     className="form-control"
                                     type="email" id="email"
-                                    placeholder="votre@email.com"
+                                    placeholder={t('auth.register.placeholders.email')}
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     autoComplete="email" required
@@ -170,7 +170,7 @@ const LoginPage = () => {
                             style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
                         >
                             {loading ? (
-                                <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> {t('auth.login.submit')}...</>
+                                <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> {t('auth.login.logging_in')}</>
                             ) : (
                                 <>{t('auth.login.submit')} <ChevronRight size={18} /></>
                             )}

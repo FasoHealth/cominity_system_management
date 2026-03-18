@@ -28,6 +28,7 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminAppealsPage from './pages/admin/AdminAppealsPage';
 
 import { ThemeProvider } from './context/ThemeContext';
+import InstallAppBanner from './components/InstallAppBanner';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
     const { user, loading, isLoggedIn, isAdmin } = useAuth();
@@ -75,6 +76,7 @@ function App() {
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <ThemeProvider>
                 <AuthProvider>
+                    <InstallAppBanner />
                     <AppRoutes />
                 </AuthProvider>
             </ThemeProvider>

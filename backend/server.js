@@ -1,7 +1,10 @@
+
+
 /**
  * server.js — Point d'entrée principal du backend
  * Community Security Alert | CS27 - Groupe 16
  */
+
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -16,6 +19,7 @@ const userRoutes = require('./routes/users');
 const notificationRoutes = require('./routes/notifications');
 const messageRoutes = require('./routes/messages');
 const supportRoutes = require('./routes/support');
+const tempImagesRoutes = require('./routes/temp-images');
 
 const app = express();
 
@@ -29,13 +33,13 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'https://security-allert.netlify.app'
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: [
+    'http://localhost:3000',
+    'https://security-allert.netlify.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,6 +54,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/uploads/incidents', tempImagesRoutes); // Route temporaire pour anciennes images
 
 // ── Route de santé ────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

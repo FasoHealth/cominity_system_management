@@ -8,25 +8,25 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-import { 
-    ShieldAlert, 
-    AlertTriangle, 
-    Hammer, 
-    Eye, 
-    Flame, 
-    Car, 
-    MapPin, 
-    Target, 
-    Loader2, 
-    Camera, 
-    Image as ImageIcon, 
+import {
+    ShieldAlert,
+    AlertTriangle,
+    Hammer,
+    Eye,
+    Flame,
+    Car,
+    MapPin,
+    Target,
+    Loader2,
+    Camera,
+    Image as ImageIcon,
     ChevronRight,
     Filter,
     Ghost,
     Send,
     AlertCircle,
     Info,
-    CheckCircle,
+    CheckCircle2,
     ClipboardCheck,
     X
 } from 'lucide-react';
@@ -42,21 +42,7 @@ const redIcon = L.divIcon({
     iconSize: [24, 24], iconAnchor: [12, 12],
 });
 
-const CATS = [
-    { value: 'theft', label: 'Vol', icon: ShieldAlert },
-    { value: 'assault', label: 'Agression', icon: ShieldAlert },
-    { value: 'vandalism', label: 'Vandalisme', icon: Hammer },
-    { value: 'suspicious_activity', label: 'Suspect', icon: Eye },
-    { value: 'fire', label: 'Incendie', icon: Flame },
-    { value: 'kidnapping', label: 'Enlèvement', icon: Ghost },
-    { value: 'other', label: 'Autre', icon: AlertTriangle },
-];
-const SEVS = [
-    { value: 'low', label: 'Faible', desc: 'Peu urgent' },
-    { value: 'medium', label: 'Moyen', desc: 'Modéré' },
-    { value: 'high', label: 'Élevé', desc: 'Urgent' },
-    { value: 'critical', label: 'Critique', desc: 'Extrême' },
-];
+
 
 const ChangeView = ({ center }) => {
     const map = useMap();
@@ -104,16 +90,16 @@ const ReportIncidentPage = () => {
 
     const handleImageChange = (e) => {
         const newFiles = Array.from(e.target.files);
-        
+
         // Calculer combien d'images on peut encore ajouter
         const remainingSlots = 4 - images.length;
         if (remainingSlots <= 0) return; // Limite atteinte
-        
+
         const filesToAdd = newFiles.slice(0, remainingSlots);
-        
+
         setImages(prev => [...prev, ...filesToAdd]);
         setPreviews(prev => [...prev, ...filesToAdd.map(f => URL.createObjectURL(f))]);
-        
+
         // Réinitialiser l'input pour permettre de sélectionner le même fichier si on l'a supprimé juste avant
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
@@ -369,7 +355,7 @@ const ReportIncidentPage = () => {
 
                     <div className="card" style={{ borderLeft: '4px solid #10b981', padding: 16 }}>
                         <p style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, color: '#047857' }}>
-                            <CheckCircle size={16} /> {t('incident.report.summary.fast_validation.title')}
+                            <CheckCircle2 size={16} /> {t('incident.report.summary.fast_validation.title')}
                         </p>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                             {t('incident.report.summary.fast_validation.desc')}

@@ -2,15 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { 
-    Folder, 
-    Zap, 
-    Clock, 
-    CheckCircle2, 
-    Trophy, 
-    XCircle, 
-    MapPin, 
-    Edit3, 
+import {
+    Folder,
+    Zap,
+    Clock,
+    CheckCircle2,
+    Trophy,
+    XCircle,
+    MapPin,
+    Edit3,
     ChevronRight,
     Search,
     Flame,
@@ -18,25 +18,27 @@ import {
     Hammer,
     Eye,
     ShieldAlert,
-    AlertTriangle
+    AlertTriangle,
+    Ghost
 } from 'lucide-react';
 
 import { useTranslation } from 'react-i18next';
+import { timeAgo } from '../utils/dateUtils';
 
 const MyIncidentsPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('');
 
-    const CAT_LABELS = { 
-        theft: t('feed.categories.theft'), 
-        assault: t('feed.categories.assault'), 
-        vandalism: t('feed.categories.vandalism'), 
-        suspicious_activity: t('feed.categories.suspicious_activity'), 
-        fire: t('feed.categories.fire'), 
-        kidnapping: t('feed.categories.kidnapping'), 
-        other: t('feed.categories.other') 
+    const CAT_LABELS = {
+        theft: t('feed.categories.theft'),
+        assault: t('feed.categories.assault'),
+        vandalism: t('feed.categories.vandalism'),
+        suspicious_activity: t('feed.categories.suspicious_activity'),
+        fire: t('feed.categories.fire'),
+        kidnapping: t('feed.categories.kidnapping'),
+        other: t('feed.categories.other')
     };
 
     const CATEGORY_ICONS = {
@@ -45,22 +47,22 @@ const MyIncidentsPage = () => {
         vandalism: Hammer,
         suspicious_activity: Eye,
         fire: Flame,
-        kidnapping: ShieldAlert,
+        kidnapping: Ghost,
         other: AlertTriangle
     };
 
-    const SEV_LABELS = { 
-        low: t('feed.severity.low'), 
-        medium: t('feed.severity.medium'), 
-        high: t('feed.severity.high'), 
-        critical: t('feed.severity.critical') 
+    const SEV_LABELS = {
+        low: t('feed.severities.low'),
+        medium: t('feed.severities.medium'),
+        high: t('feed.severities.high'),
+        critical: t('feed.severities.critical')
     };
-    
-    const STATUS_LABELS = { 
-        pending: t('feed.status.pending'), 
-        approved: t('feed.status.approved'), 
-        resolved: t('feed.status.resolved'), 
-        rejected: t('feed.status.rejected') 
+
+    const STATUS_LABELS = {
+        pending: t('feed.status.pending'),
+        approved: t('feed.status.approved'),
+        resolved: t('feed.status.resolved'),
+        rejected: t('feed.status.rejected')
     };
 
     const STATUS_FILTERS = [
@@ -71,15 +73,6 @@ const MyIncidentsPage = () => {
         { value: 'rejected', label: t('feed.status.rejected'), icon: <XCircle size={14} /> },
     ];
 
-    function timeAgo(date) {
-        const sec = Math.floor((Date.now() - new Date(date)) / 1000);
-        if (sec < 60) return t('feed.time.now');
-        const min = Math.floor(sec / 60);
-        if (min < 60) return t('feed.time.min', { count: min });
-        const h = Math.floor(min / 60);
-        if (h < 24) return t('feed.time.hour', { count: h });
-        return new Date(date).toLocaleDateString();
-    }
 
     useEffect(() => {
         axios.get('/api/incidents/my').then(({ data }) => {
@@ -171,9 +164,14 @@ const MyIncidentsPage = () => {
                                                 </div>
                                             </td>
                                             <td>
-                                                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
                                                     <span className={`badge badge-${inc.category}`}>{CAT_LABELS[inc.category]}</span>
-                                                    <span className={`badge badge-${inc.severity}`}>{SEV_LABELS[inc.severity]}</span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em' }}>
+                                                            {i18n.language === 'fr' ? 'Niveau :' : 'Level :'}
+                                                        </span>
+                                                        <span className={`badge badge-${inc.severity}`}>{SEV_LABELS[inc.severity]}</span>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -183,7 +181,7 @@ const MyIncidentsPage = () => {
                                             </td>
                                             <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                    <Clock size={14} opacity={0.6} /> {timeAgo(inc.createdAt)}
+                                                    <Clock size={14} opacity={0.6} /> {timeAgo(inc.createdAt, t, i18n.language)}
                                                 </div>
                                             </td>
                                             <td><span className={`badge badge-${inc.status}`}>{STATUS_LABELS[inc.status] || inc.status}</span></td>

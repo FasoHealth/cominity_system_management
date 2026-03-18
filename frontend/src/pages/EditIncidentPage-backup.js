@@ -4,26 +4,53 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
-import { getImageUrl } from '../utils/imageUtils';
 
-import {
-    ShieldAlert,
-    AlertTriangle,
-    Hammer,
-    Eye,
-    Flame,
-    Car,
+import { 
+    ShieldAlert, 
+    AlertTriangle, 
+    Hammer, 
+    Eye, 
+    Flame, 
+    Car, 
     Pencil,
     XCircle,
-    Send,
-    Ghost
+    Send
 } from 'lucide-react';
+
+const CATS = [
+    { value: 'theft', label: 'Vol', icon: ShieldAlert },
+    { value: 'assault', label: 'Agression', icon: ShieldAlert },
+    { value: 'vandalism', label: 'Vandalisme', icon: Hammer },
+    { value: 'suspicious_activity', label: 'Suspect', icon: Eye },
+    { value: 'fire', label: 'Incendie', icon: Flame },
+    { value: 'kidnapping', label: 'Enlèvement', icon: ShieldAlert },
+    { value: 'other', label: 'Autre', icon: AlertTriangle },
+];
+const SEVS = [
+    { value: 'low', label: 'Faible', desc: 'Peu urgent' },
+    { value: 'medium', label: 'Moyen', desc: 'Modéré' },
+    { value: 'high', label: 'Élevé', desc: 'Urgent' },
+    { value: 'critical', label: 'Critique', desc: 'Extrême' },
+];
 
 const EditIncidentPage = () => {
     const { t } = useTranslation();
     const { id } = useParams();
     const { theme } = useTheme();
 
+    const getImageUrl = (path) => {
+        // Si le chemin est une URL complète (Cloudinary), la retourner directement
+        if (path && (path.startsWith('http') || path.startsWith('https'))) {
+            return path;
+        }
+        // Si c'est un chemin local d'ancienne image, utiliser la route temporaire
+        if (path && path.startsWith('uploads/')) {
+            const filename = path.replace('uploads/incidents/', '');
+            return `http://localhost:5000/uploads/incidents/local/${filename}`;
+        }
+        // Sinon, construire l'URL locale standard
+        return `http://localhost:5000/${path}`;
+    };
 
     const CATS = [
         { value: 'theft', label: t('feed.categories.theft'), icon: ShieldAlert },
@@ -31,7 +58,7 @@ const EditIncidentPage = () => {
         { value: 'vandalism', label: t('feed.categories.vandalism'), icon: Hammer },
         { value: 'suspicious_activity', label: t('feed.categories.suspicious_activity'), icon: Eye },
         { value: 'fire', label: t('feed.categories.fire'), icon: Flame },
-        { value: 'kidnapping', label: t('feed.categories.kidnapping'), icon: Ghost },
+        { value: 'kidnapping', label: t('feed.categories.kidnapping'), icon: ShieldAlert },
         { value: 'other', label: t('feed.categories.other'), icon: AlertTriangle },
     ];
     const SEVS = [
@@ -40,6 +67,10 @@ const EditIncidentPage = () => {
         { value: 'high', label: t('feed.severities.high'), desc: t('incident.report.form.severity_desc.high') },
         { value: 'critical', label: t('feed.severities.critical'), desc: t('incident.report.form.severity_desc.critical') },
     ];
+
+    const mapTileUrl = theme === 'dark'
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 
     const [form, setForm] = useState({
         title: '', description: '', category: 'other', severity: 'medium',
@@ -89,9 +120,9 @@ const EditIncidentPage = () => {
             const fd = new FormData();
             Object.entries(form).forEach(([k, v]) => { if (v !== null) fd.append(k, v); });
             newImages.forEach(img => fd.append('images', img));
-
-            const { data } = await axios.put(`/api/incidents/${id}`, fd, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            
+            const { data } = await axios.put(`/api/incidents/${id}`, fd, { 
+                headers: { 'Content-Type': 'multipart/form-data' } 
             });
             if (data.success) navigate('/my-incidents');
         } catch (err) {

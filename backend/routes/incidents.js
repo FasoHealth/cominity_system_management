@@ -15,34 +15,11 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { protect, adminOnly, optionalAuth } = require('../middleware/auth');
 
-// ── Configuration Multer ──────────────────────────────────────────────────────
-const uploadDir = path.join(__dirname, '..', 'uploads', 'incidents');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+// ── Configuration Cloudinary ───────────────────────────────────────────────────
+const { cloudinary, storage } = require('../config/cloudinary');
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const uniqueName = `${uuidv4()}${path.extname(file.originalname).toLowerCase()}`;
-        cb(null, uniqueName);
-    },
-});
-
-const fileFilter = (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (allowed.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Format non autorisé. Utilisez jpg, png ou webp.'), false);
-    }
-};
-
-const upload = multer({
-    storage,
-    fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024, files: 4 },
-});
+// ── Configuration Multer avec Cloudinary ───────────────────────────────────────
+const upload = multer({ storage });
 
 // ── Helper validation ─────────────────────────────────────────────────────────
 const handleValidation = (req, res) => {
@@ -195,14 +172,16 @@ router.post(
         try {
             const { title, description, category, severity, address, city, lat, lng, isAnonymous } = req.body;
 
-            // Construire la liste des images uploadées
+            // Construire la liste des images uploadées vers Cloudinary
             const images = req.files
                 ? req.files.map((f) => ({
                     filename: f.filename,
                     originalName: f.originalname,
-                    path: f.path.replace(/\\/g, '/'),
+                    path: f.path, // URL Cloudinary retournée par multer-storage-cloudinary
                     size: f.size,
                     mimetype: f.mimetype,
+                    public_id: f.public_id, // ID Cloudinary
+                    secure_url: f.secure_url // URL sécurisée Cloudinary
                 }))
                 : [];
 

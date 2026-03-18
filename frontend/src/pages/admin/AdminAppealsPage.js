@@ -23,7 +23,7 @@ import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
 const AdminAppealsPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [appeals, setAppeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [replyingTo, setReplyingTo] = useState(null);
@@ -111,7 +111,7 @@ const AdminAppealsPage = () => {
                                 <div className="user-info" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                                     <div className="avatar-small" style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--brand-navy)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                                         {appeal.user?.avatar ? (
-                                            <img src={`${process.env.REACT_APP_API_URL || ''}${appeal.user.avatar}`} alt="" style={{ width: '100%', height: '100%', borderRadius: 12, objectFit: 'cover' }} />
+                                            <img src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${appeal.user.avatar}`} alt="" style={{ width: '100%', height: '100%', borderRadius: 12, objectFit: 'cover' }} />
                                         ) : (
                                             appeal.user?.name?.charAt(0) || <User size={20} />
                                         )}
@@ -128,11 +128,11 @@ const AdminAppealsPage = () => {
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                                     <span className={`badge badge-${appeal.status}`} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 12px', borderRadius: 20, fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>
                                         {appeal.status === 'pending' ? <><Clock size={12} /> {t('support.pending').toUpperCase()}</> :
-                                         appeal.status === 'replied' ? <><MessageSquare size={12} /> {t('admin.appeals.replied')}</> :
-                                         <><CheckCircle size={12} /> {t('admin.appeals.resolved')}</>}
+                                            appeal.status === 'replied' ? <><MessageSquare size={12} /> {t('admin.appeals.replied')}</> :
+                                                <><CheckCircle size={12} /> {t('admin.appeals.resolved')}</>}
                                     </span>
                                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <Clock size={10} /> {t('admin.users.table.date')} {new Date(appeal.createdAt).toLocaleDateString()}
+                                        <Clock size={10} /> {t('admin.users.table.date')} {new Date(appeal.createdAt).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}
                                     </div>
                                 </div>
                             </div>
@@ -142,16 +142,18 @@ const AdminAppealsPage = () => {
                                 <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line' }}>{appeal.message}</p>
                             </div>
 
-                            {appeal.adminReply && (
-                                <div className="appeal-reply" style={{ borderLeft: '4px solid var(--brand-orange)', background: 'rgba(232,84,26,0.05)', padding: 16, borderRadius: '0 12px 12px 0', marginBottom: 20 }}>
-                                    <h5 style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: 10, color: 'var(--brand-orange)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <Shield size={14} /> {t('admin.appeals.admin_reply')}
-                                    </h5>
-                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', margin: 0 }}>{appeal.adminReply}</p>
-                                </div>
-                            )}
+                            {
+                                appeal.adminReply && (
+                                    <div className="appeal-reply" style={{ borderLeft: '4px solid var(--brand-orange)', background: 'rgba(232,84,26,0.05)', padding: 16, borderRadius: '0 12px 12px 0', marginBottom: 20 }}>
+                                        <h5 style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: 10, color: 'var(--brand-orange)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <Shield size={14} /> {t('admin.appeals.admin_reply')}
+                                        </h5>
+                                        <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', margin: 0 }}>{appeal.adminReply}</p>
+                                    </div>
+                                )
+                            }
 
-                            <div className="appeal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                            < div className="appeal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
                                 {replyingTo === appeal._id ? (
                                     <div style={{ width: '100%' }}>
                                         <textarea
@@ -189,7 +191,7 @@ const AdminAppealsPage = () => {
                         </div>
                     ))
                 )}
-            </div>
+            </div >
 
             <style>{`
                 .appeal-card {
@@ -203,7 +205,7 @@ const AdminAppealsPage = () => {
                 .badge-replied { background: rgba(30,64,175,0.1); color: #1e40af; border: 1px solid rgba(30,64,175,0.2); }
                 .badge-resolved { background: rgba(34,197,94,0.1); color: #15803d; border: 1px solid rgba(34,197,94,0.2); }
             `}</style>
-        </div>
+        </div >
     );
 };
 

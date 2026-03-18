@@ -1,17 +1,17 @@
 // frontend/src/pages/admin/AdminUsersPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-    Users, 
-    Search, 
-    UserPlus, 
-    User, 
-    Mail, 
-    Shield, 
-    Activity, 
-    Calendar, 
-    AlertTriangle, 
-    ChevronLeft, 
+import {
+    Users,
+    Search,
+    UserPlus,
+    User,
+    Mail,
+    Shield,
+    Activity,
+    Calendar,
+    AlertTriangle,
+    ChevronLeft,
     ChevronRight,
     UserCheck,
     Ban,
@@ -32,7 +32,7 @@ function avatarColor(name = '') {
 import { useTranslation } from 'react-i18next';
 
 const AdminUsersPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -133,7 +133,7 @@ const AdminUsersPage = () => {
                                                     }}>{u.role === 'admin' ? t('admin.users.roles.admin') : u.role === 'guide' ? t('admin.users.roles.moderator') : t('admin.users.roles.citizen')}</span>
                                                 </td>
                                                 <td>
-                                                    <label className="toggle-label" style={{ margin: 0 }} title={isLoading ? '...' : (u.isActive ? t('profile.notifications.status_on') : t('profile.notifications.status_off'))}>
+                                                    <label className="toggle-label" style={{ margin: 0 }} title={isLoading ? '...' : (u.isActive ? t('profile.status_on') : t('profile.status_off'))}>
                                                         <input type="checkbox" className="toggle-input"
                                                             checked={u.isActive}
                                                             onChange={() => toggleUserStatus(u._id)}
@@ -142,11 +142,11 @@ const AdminUsersPage = () => {
                                                     </label>
                                                 </td>
                                                 <td style={{ fontSize: '0.82rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                                                    {new Date(u.createdAt).toLocaleDateString()}
+                                                    {new Date(u.createdAt).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}
                                                 </td>
                                                 <td style={{ textAlign: 'center' }}>
-                                                    <span style={{ 
-                                                        fontWeight: 800, 
+                                                    <span style={{
+                                                        fontWeight: 800,
                                                         color: u.incidentsReported > 5 ? 'var(--brand-orange)' : 'var(--text-primary)',
                                                         background: u.incidentsReported > 0 ? 'var(--bg-secondary)' : 'transparent',
                                                         padding: '2px 8px', borderRadius: 4

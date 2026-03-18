@@ -1,21 +1,21 @@
 // frontend/src/components/ChatBox.js
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { 
-    Check, 
-    CheckCheck, 
-    MessageSquare, 
-    Inbox, 
-    Send, 
-    Paperclip, 
-    Image as ImageIcon 
+import {
+    Check,
+    CheckCheck,
+    MessageSquare,
+    Inbox,
+    Send,
+    Paperclip,
+    Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 import { useTranslation } from 'react-i18next';
 
 const ChatBox = ({ incidentId }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
@@ -104,16 +104,16 @@ const ChatBox = ({ incidentId }) => {
                             <Inbox size={48} opacity={0.2} />
                         </div>
                         <h4>{t('chat.empty_title')}</h4>
-                        <p>{user.role === 'admin' 
-                            ? t('chat.empty_admin') 
+                        <p>{user.role === 'admin'
+                            ? t('chat.empty_admin')
                             : t('chat.empty_citizen')}
                         </p>
                     </div>
                 ) : (
                     messages.map((msg, i) => {
                         const isMe = msg.sender?._id === user._id;
-                        const senderName = msg.sender?.role === 'admin' ? 'ADMINISTRATION' : msg.sender?.name;
-                        
+                        const senderName = msg.sender?.role === 'admin' ? t('chat.administration') : msg.sender?.name;
+
                         return (
                             <div key={i} className={`message-row ${isMe ? 'me' : 'them'}`}>
                                 {!isMe && <div className="sender-tag">{senderName}</div>}
@@ -123,7 +123,7 @@ const ChatBox = ({ incidentId }) => {
                                     </div>
                                     <div className="message-meta-data">
                                         <span className="msg-time">
-                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(msg.createdAt).toLocaleTimeString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                         {renderTicks(msg)}
                                     </div>
