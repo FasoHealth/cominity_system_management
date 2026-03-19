@@ -29,14 +29,12 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   'http://localhost:5173',
   'https://security-allert.netlify.app',
+  'https://cs-alert.netlify.app',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://security-allert.netlify.app'
-  ],
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
