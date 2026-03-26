@@ -26,7 +26,31 @@ const storage = new CloudinaryStorage({
     }
 });
 
+const avatarStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'community-security-alert/avatars',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [
+            { width: 200, height: 200, crop: 'thumb', gravity: 'face', quality: 'auto:good' }
+        ]
+    }
+});
+
+const messageStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'community-security-alert/messages',
+        resource_type: 'auto', // Cloudinary décidera du type (image/video/raw)
+        transformation: [
+            { quality: 'auto' }
+        ]
+    }
+});
+
 module.exports = {
     cloudinary,
-    storage
+    storage,
+    avatarStorage,
+    messageStorage
 };

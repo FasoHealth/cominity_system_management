@@ -27,7 +27,7 @@ const UserSchema = new mongoose.Schema(
         password: {
             type: String,
             required: [true, 'Le mot de passe est obligatoire'],
-            minlength: [8, 'Le mot de passe doit contenir au moins 8 caractères'],
+            minlength: [6, 'Le mot de passe doit contenir au moins 6 caractères'],
             select: false, // Ne pas inclure dans les requêtes par défaut
         },
         phone: {
@@ -53,12 +53,12 @@ const UserSchema = new mongoose.Schema(
 
         // ── Localisation de l'utilisateur (optionnelle) ──────────────────────────
         location: {
-    address: { type: String, default: null },
-    city: { type: String, default: null },
-    country: { type: String, default: 'Burkina Faso' },
-    type: { type: String, enum: ['Point'], default: 'Point' },
-    coordinates: { type: [Number], default: [0, 0] },
-},
+            address: { type: String, default: null },
+            city: { type: String, default: null },
+            country: { type: String, default: 'Burkina Faso' },
+            type: { type: String, enum: ['Point'], default: 'Point' },
+            coordinates: { type: [Number], default: [0, 0] },
+        },
 
         // ── Statistiques ─────────────────────────────────────────────────────────
         incidentsReported: {
@@ -75,6 +75,21 @@ const UserSchema = new mongoose.Schema(
         // ── Réinitialisation du mot de passe ──────────────────────────────────────
         resetPasswordToken: String,
         resetPasswordExpire: Date,
+
+        // ── Vérification Email ────────────────────────────────────────────────────
+        isEmailVerified: {
+            type: Boolean,
+            default: false,
+        },
+        emailVerificationToken: String,
+        emailVerificationExpire: Date,
+        emailVerificationCode: String,
+        emailVerificationCodeExpire: Date,
+        // ── Push Notifications ────────────────────────────────────────────────────
+        fcmToken: {
+            type: String,
+            default: null,
+        },
     },
     {
         timestamps: true, // Ajoute createdAt et updatedAt automatiquement

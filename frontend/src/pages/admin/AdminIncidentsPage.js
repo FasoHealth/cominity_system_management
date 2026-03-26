@@ -62,8 +62,8 @@ const AdminIncidentsPage = () => {
         setLoading(true);
         try {
             const { data } = await axios.get(`/api/incidents/admin?status=${activeTab}&limit=50`);
-            if (data.success) { setIncidents(data.incidents); setCounts(data.statusCounts); }
-        } catch (err) { console.error(err); }
+            if (data.success) { setIncidents(data.incidents || []); setCounts(data.statusCounts || {}); }
+        } catch (err) { console.error('Error fetching admin incidents:', err); }
         finally { setLoading(false); }
     };
 

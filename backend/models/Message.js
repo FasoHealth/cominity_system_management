@@ -17,9 +17,13 @@ const MessageSchema = new mongoose.Schema(
             ref: 'User',
             required: true,
         },
+        type: {
+            type: String,
+            enum: ['text', 'audio', 'image', 'video', 'file'],
+            default: 'text'
+        },
         content: {
             type: String,
-            required: [true, 'Le message ne peut pas être vide'],
             trim: true,
             maxlength: [1000, 'Le message ne peut pas dépasser 1000 caractères'],
         },

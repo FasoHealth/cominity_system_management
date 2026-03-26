@@ -17,7 +17,7 @@ const NotificationSchema = new mongoose.Schema(
         // ── Type de notification ─────────────────────────────────────────────────
         type: {
             type: String,
-            enum: ['incident_approved', 'incident_rejected', 'incident_resolved', 'incident_upvoted', 'new_incident_nearby', 'new_message', 'message', 'system'],
+            enum: ['incident_approved', 'incident_rejected', 'incident_resolved', 'incident_upvoted', 'new_incident_nearby', 'new_incident', 'new_message', 'message', 'system'],
             required: true,
         },
 

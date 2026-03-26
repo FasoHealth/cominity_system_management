@@ -26,6 +26,8 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import LanguageSwitcher from './LanguageSwitcher';
 import axios from 'axios';
+import { useNotifications } from '../context/NotificationContext';
+import { X, ExternalLink } from 'lucide-react';
 
 const NAV_ITEMS = [
     { to: '/feed', icon: <Newspaper size={20} />, labelKey: 'nav.feed' },
@@ -49,27 +51,8 @@ const Layout = () => {
     const { theme, toggleTheme } = useTheme();
 
     const [collapsed, setCollapsed] = useState(false);
-    const [unreadNotifs, setUnreadNotifs] = useState(0);
+    const { unreadCount: unreadNotifs, lastNotification, setLastNotification } = useNotifications();
     const navigate = useNavigate();
-
-    // Fetch unread notifications
-    React.useEffect(() => {
-        const fetchUnread = async () => {
-            try {
-                if (user) {
-                    const { data } = await axios.get('/api/notifications');
-                    if (data.success) {
-                        setUnreadNotifs(data.unreadCount || 0);
-                    }
-                }
-            } catch (err) {
-                console.error('Erreur unread count:', err);
-            }
-        };
-        fetchUnread();
-        const interval = setInterval(fetchUnread, 60000); // Check every minute
-        return () => clearInterval(interval);
-    }, [user]);
 
     // Update user location for proximity alerts (500m)
     React.useEffect(() => {
@@ -171,27 +154,10 @@ const Layout = () => {
                         </>
                     )}
 
+
                     <div className="sidebar-section-title" style={{ marginTop: 8 }}>
-                        {collapsed ? '·' : t('nav.preferences')}
+                        {collapsed ? '·' : t('nav.actions')}
                     </div>
-
-                    {!collapsed && (
-                        <div style={{ padding: '0 8px', marginBottom: 8 }}>
-                            <LanguageSwitcher />
-                        </div>
-                    )}
-
-                    <button
-                        className="sidebar-link"
-                        onClick={toggleTheme}
-                        title={collapsed ? (theme === 'light' ? t('nav.dark_mode') : t('nav.light_mode')) : ''}
-                        style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer' }}
-                    >
-                        <span className="sidebar-link-icon">
-                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                        </span>
-                        {!collapsed && <span className="sidebar-link-text">{theme === 'light' ? t('nav.dark_mode') : t('nav.light_mode')}</span>}
-                    </button>
 
                     <button
                         className="sidebar-link"
@@ -239,9 +205,52 @@ const Layout = () => {
                 </div>
             </aside>
 
+
             {/* ── Main Content ── */}
             <main className={`main-content${collapsed ? ' sidebar-collapsed' : ''}`}>
-                <Outlet />
+                <header className="main-header fade-in">
+                    <div className="header-left">
+                        {collapsed && (
+                            <div className="sidebar-logo-icon" style={{ width: 32, height: 32 }}>
+                                <Zap size={18} fill="var(--brand-orange)" color="var(--brand-orange)" />
+                            </div>
+                        )}
+                    </div>
+                    <div className="header-right">
+                        <LanguageSwitcher />
+                        <button
+                            className="theme-toggle-btn"
+                            onClick={toggleTheme}
+                            title={theme === 'light' ? t('nav.dark_mode') : t('nav.light_mode')}
+                        >
+                            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+                        </button>
+                    </div>
+                </header>
+                <div className="page-content-wrapper">
+                    <div className="fade-in-container slide-up">
+                        <Outlet />
+                    </div>
+                </div>
+
+                {/* Real-time Notification Toast */}
+                {lastNotification && (
+                    <div className="notification-toast slide-up">
+                        <div className="toast-icon">
+                            <Bell size={20} color="white" />
+                        </div>
+                        <div className="toast-content" onClick={() => {
+                            if (lastNotification.incident) navigate(`/incidents/${lastNotification.incident}`);
+                            setLastNotification(null);
+                        }}>
+                            <div className="toast-title">{lastNotification.title}</div>
+                            <div className="toast-message">{lastNotification.message}</div>
+                        </div>
+                        <button className="toast-close" onClick={() => setLastNotification(null)}>
+                            <X size={16} />
+                        </button>
+                    </div>
+                )}
             </main>
         </div>
     );

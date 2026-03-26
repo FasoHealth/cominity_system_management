@@ -1,6 +1,6 @@
 // frontend/src/pages/LoginPage.js
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
     Zap,
     Mail,
@@ -9,7 +9,8 @@ import {
     EyeOff,
     ShieldAlert,
     AlertCircle,
-    ChevronRight
+    ChevronRight,
+    CheckCircle2
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +27,10 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Check for success message from state (from register or verify-email)
+    const successMsg = location.state?.message;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -97,6 +102,12 @@ const LoginPage = () => {
                         {t('auth.login.title')} <span style={{ color: 'var(--brand-orange)', fontSize: '1.5rem' }}>•</span>
                     </h1>
                     <p className="auth-subtitle" style={{ color: '#666' }}>{t('auth.login.subtitle')}</p>
+
+                    {successMsg && (
+                        <div className="alert alert-success" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(34,197,94,0.1)', color: 'var(--green)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                            <CheckCircle2 size={18} /> {successMsg}
+                        </div>
+                    )}
 
                     {error && (
                         <div className="alert alert-error" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

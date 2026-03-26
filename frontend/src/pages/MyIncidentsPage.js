@@ -75,7 +75,7 @@ const MyIncidentsPage = () => {
 
 
     useEffect(() => {
-        axios.get('/api/incidents/my').then(({ data }) => {
+        axios.get('/api/incidents/mes-signalements').then(({ data }) => {
             if (data.success) setIncidents(data.incidents);
         }).catch(console.error).finally(() => setLoading(false));
     }, []);

@@ -106,7 +106,8 @@
     "empty_title": "No messages",
     "empty_admin": "Start the conversation to help the citizen.",
     "empty_citizen": "Admin will contact you here for more info.",
-    "placeholder": "Reply..."
+    "placeholder": "Reply...",
+    "download_file": "Download file"
   },
   "dashboard": {
     "greeting": "Hello, {{name}}",
@@ -247,6 +248,11 @@
     "report": {
       "title": "Report an Incident",
       "subtitle": "Help the community by reporting a local security issue.",
+      "steps": {
+        "classification": "Classification",
+        "details": "Details & Locale",
+        "review": "Review"
+      },
       "geo_not_supported": "Geolocation not supported.",
       "geo_address_error": "Position retrieved, but address not found automatically.",
       "geo_denied": "Location denied.",
@@ -316,7 +322,14 @@
     "user_popup": "You are here",
     "details_btn": "Details",
     "report_cta": "REPORT AN INCIDENT",
-    "legend_gravity": "Severity"
+    "legend_gravity": "Severity",
+    "unit_m": "m",
+    "unit_km": "km",
+    "time_all": "All time",
+    "time_today": "Today",
+    "time_week": "Last 7 days",
+    "time_month": "Last 30 days",
+    "cluster_incidents": "incidents in this area"
   },
   "profile": {
     "title": "Profile Settings",
@@ -420,8 +433,18 @@
         "appeals": "Account Appeals"
       },
       "charts": {
+        "monthly_trend": "Monthly Trend (6 months)",
         "daily_title": "Incidents in the last 7 days",
         "category_title": "Distribution by Category"
+      },
+      "export": "Export Data (CSV)",
+      "resolution_rate": "Effectiveness by Category",
+      "top_reporters": "Top Reporters (Active Users)",
+      "manage_users": "Manage all users",
+      "table": {
+        "category": "Category",
+        "total": "Total",
+        "rate": "Rate"
       }
     },
     "incidents": {
@@ -513,5 +536,15 @@
       "btn": "Download App",
       "close": "Close"
     }
+  },
+  "common": {
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back",
+    "close": "Close",
+    "confirm": "Confirm"
   }
 }

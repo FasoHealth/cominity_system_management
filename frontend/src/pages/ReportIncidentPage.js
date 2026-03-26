@@ -21,6 +21,7 @@ import {
     Camera,
     Image as ImageIcon,
     ChevronRight,
+    ChevronLeft,
     Filter,
     Ghost,
     Send,
@@ -78,6 +79,8 @@ const ReportIncidentPage = () => {
         title: '', description: '', category: 'other', severity: 'medium',
         address: '', city: 'Ouagadougou', isAnonymous: false, lat: null, lng: null
     });
+
+    const [step, setStep] = useState(1);
     const [images, setImages] = useState([]);
     const [previews, setPreviews] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -88,19 +91,33 @@ const ReportIncidentPage = () => {
 
     const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
 
+    const nextStep = () => {
+        if (step === 1) {
+            if (!form.title || form.title.length < 5) { setError(t('incident.report.form.min_chars_5')); return; }
+            setError(null);
+        }
+        if (step === 2) {
+            if (!form.description || form.description.length < 20) { setError(t('incident.report.form.min_chars_20')); return; }
+            if (!form.address) { setError(t('incident.report.form.address_required') || 'L\'adresse est requise'); return; }
+            setError(null);
+        }
+        setStep(s => s + 1);
+        window.scrollTo(0, 0);
+    };
+
+    const prevStep = () => {
+        setStep(s => s - 1);
+        window.scrollTo(0, 0);
+    };
+
     const handleImageChange = (e) => {
+        // ... (rest of image logic remains same)
         const newFiles = Array.from(e.target.files);
-
-        // Calculer combien d'images on peut encore ajouter
         const remainingSlots = 4 - images.length;
-        if (remainingSlots <= 0) return; // Limite atteinte
-
+        if (remainingSlots <= 0) return;
         const filesToAdd = newFiles.slice(0, remainingSlots);
-
         setImages(prev => [...prev, ...filesToAdd]);
         setPreviews(prev => [...prev, ...filesToAdd.map(f => URL.createObjectURL(f))]);
-
-        // Réinitialiser l'input pour permettre de sélectionner le même fichier si on l'a supprimé juste avant
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
@@ -139,7 +156,8 @@ const ReportIncidentPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); setLoading(true); setError(null);
+        if (e) e.preventDefault();
+        setLoading(true); setError(null);
         try {
             const fd = new FormData();
             Object.entries(form).forEach(([k, v]) => { if (v !== null) fd.append(k, v); });
@@ -169,197 +187,202 @@ const ReportIncidentPage = () => {
                 <p className="page-subtitle">{t('incident.report.subtitle')}</p>
             </div>
 
+            {/* Step Indicator */}
+            <div className="step-indicator-container">
+                <div className="step-line">
+                    <div className="step-line-progress" style={{ width: `${((step - 1) / 2) * 100}%` }} />
+                </div>
+                {[1, 2, 3].map(i => (
+                    <div key={i} className={`step-dot ${step >= i ? 'active' : ''} ${step > i ? 'completed' : ''}`}>
+                        {step > i ? <CheckCircle2 size={16} /> : i}
+                        <span className="step-label">
+                            {i === 1 ? t('incident.report.steps.classification') || 'Classification' :
+                                i === 2 ? t('incident.report.steps.details') || 'Détails & Lieu' :
+                                    t('incident.report.steps.review') || 'Validation'}
+                        </span>
+                    </div>
+                ))}
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
-                <div className="card" style={{ padding: 24 }}>
+                <div className="card slide-up" style={{ padding: 32, minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
                     {error && <div className="alert alert-error" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
                         <AlertCircle size={20} /> {error}
                     </div>}
-                    <form onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="title">
-                                {t('incident.report.form.title')}
-                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
-                                    {t('incident.report.form.min_chars_5')}
-                                </span>
-                            </label>
-                            <input className="form-control" type="text" id="title"
-                                placeholder={t('incident.report.form.title_placeholder')}
-                                value={form.title} onChange={e => set('title', e.target.value)} required minLength={5} maxLength={100} />
-                        </div>
 
-                        <div className="form-group">
-                            <label className="form-label">{t('incident.report.form.category')}</label>
-                            <div className="cat-grid">
-                                {CATS.map(cat => {
-                                    const Icon = cat.icon;
-                                    return (
-                                        <label key={cat.value} className={`cat-option${form.category === cat.value ? ' selected' : ''}`}>
-                                            <input type="radio" name="category" value={cat.value}
-                                                checked={form.category === cat.value}
-                                                onChange={() => set('category', cat.value)} />
-                                            <span className="cat-option-icon"><Icon size={20} /></span>
-                                            <span className="cat-option-label">{cat.label}</span>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">
-                                {t('incident.report.form.severity')}
-                                {selectedSev && (
-                                    <span className={`badge badge-${form.severity}`} style={{ marginLeft: 8 }}>
-                                        {selectedSev.label}
-                                    </span>
-                                )}
-                            </label>
-                            <div className="sev-grid">
-                                {SEVS.map(sev => (
-                                    <label key={sev.value} className={`sev-option ${sev.value}${form.severity === sev.value ? ' selected' : ''}`}>
-                                        <input type="radio" name="severity" value={sev.value}
-                                            checked={form.severity === sev.value}
-                                            onChange={() => set('severity', sev.value)} />
-                                        <div style={{ fontWeight: 700 }}>{sev.label}</div>
-                                        <div style={{ fontSize: '0.68rem', fontWeight: 400, marginTop: 2, opacity: 0.7 }}>{sev.desc}</div>
+                    <div style={{ flex: 1 }}>
+                        {step === 1 && (
+                            <div className="fade-in">
+                                <div className="form-group slide-up stagger-1">
+                                    <label className="form-label" htmlFor="title">
+                                        {t('incident.report.form.title')}
                                     </label>
-                                ))}
-                            </div>
-                        </div>
+                                    <input className="form-control" type="text" id="title"
+                                        placeholder={t('incident.report.form.title_placeholder')}
+                                        value={form.title} onChange={e => set('title', e.target.value)} required minLength={5} maxLength={100} />
+                                </div>
 
-                        <div className="form-group">
-                            <label className="form-label" htmlFor="description">
-                                {t('incident.report.form.description')}
-                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
-                                    {t('incident.report.form.min_chars_20')} • {form.description.length}/2000
-                                </span>
-                            </label>
-                            <textarea className="form-control" id="description" rows={4}
-                                placeholder={t('incident.report.form.description_placeholder')}
-                                value={form.description} onChange={e => set('description', e.target.value)}
-                                required minLength={20} maxLength={2000} />
-                        </div>
+                                <div className="form-group slide-up stagger-2">
+                                    <label className="form-label">{t('incident.report.form.category')}</label>
+                                    <div className="cat-grid">
+                                        {CATS.map(cat => {
+                                            const Icon = cat.icon;
+                                            return (
+                                                <label key={cat.value} className={`cat-option${form.category === cat.value ? ' selected' : ''}`}>
+                                                    <input type="radio" name="category" value={cat.value}
+                                                        checked={form.category === cat.value}
+                                                        onChange={() => set('category', cat.value)} />
+                                                    <span className="cat-option-icon"><Icon size={20} /></span>
+                                                    <span className="cat-option-label">{cat.label}</span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
 
-                        <div className="form-group">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                                <label className="form-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <MapPin size={18} /> {t('incident.report.form.location')}
-                                </label>
-                                <button type="button" className="btn btn-sm btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-                                    onClick={handleGetLocation} disabled={geoLoading}>
-                                    {geoLoading ? <Loader2 size={14} className="spin" /> : <Target size={14} />}
-                                    {geoLoading ? '...' : t('incident.report.form.my_position')}
-                                </button>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <input className="form-control" type="text" placeholder={t('incident.report.form.address_placeholder')}
-                                    value={form.address} onChange={e => set('address', e.target.value)} required />
-                                <input className="form-control" type="text" placeholder={t('incident.report.form.city_placeholder')}
-                                    value={form.city} onChange={e => set('city', e.target.value)} />
-                            </div>
-                        </div>
-
-                        {form.lat && form.lng && (
-                            <div style={{ height: 200, borderRadius: 12, overflow: 'hidden', marginBottom: 24, border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-                                <MapContainer center={[form.lat, form.lng]} zoom={15}
-                                    style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
-                                    <TileLayer url={mapTileUrl} attribution="&copy; CARTO" />
-                                    <Marker position={[form.lat, form.lng]} icon={redIcon} />
-                                    <ChangeView center={[form.lat, form.lng]} />
-                                </MapContainer>
+                                <div className="form-group slide-up stagger-3">
+                                    <label className="form-label">{t('incident.report.form.severity')}</label>
+                                    <div className="sev-grid">
+                                        {SEVS.map(sev => (
+                                            <label key={sev.value} className={`sev-option ${sev.value}${form.severity === sev.value ? ' selected' : ''}`}>
+                                                <input type="radio" name="severity" value={sev.value}
+                                                    checked={form.severity === sev.value}
+                                                    onChange={() => set('severity', sev.value)} />
+                                                <div style={{ fontWeight: 700 }}>{sev.label}</div>
+                                                <div style={{ fontSize: '0.68rem', opacity: 0.7 }}>{sev.desc}</div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         )}
 
-                        <div className="form-group">
-                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <Camera size={18} /> {t('incident.report.form.photos')}
-                                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem' }}>{t('incident.report.form.max_4')}</span>
-                            </label>
-                            <div className="upload-zone" style={{ borderRadius: 12, border: '2px dashed var(--border)', padding: '32px 16px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => fileInputRef.current?.click()} onMouseOver={e => e.currentTarget.style.borderColor = 'var(--brand-orange)'} onMouseOut={e => e.currentTarget.style.borderColor = 'var(--border)'}>
-                                <div className="upload-zone-icon" style={{ marginBottom: 12, color: 'var(--text-muted)' }}>
-                                    <ImageIcon size={32} opacity={0.4} />
+                        {step === 2 && (
+                            <div className="fade-in">
+                                <div className="form-group slide-up stagger-1">
+                                    <label className="form-label" htmlFor="description">
+                                        {t('incident.report.form.description')}
+                                        <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.75rem', marginLeft: 8 }}>
+                                            {form.description.length}/2000
+                                        </span>
+                                    </label>
+                                    <textarea className="form-control" id="description" rows={5}
+                                        placeholder={t('incident.report.form.description_placeholder')}
+                                        value={form.description} onChange={e => set('description', e.target.value)}
+                                        required minLength={20} maxLength={2000} />
                                 </div>
-                                <div className="upload-zone-text" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t('incident.report.form.upload_hint')}</div>
-                                <div className="upload-zone-hint" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>{t('incident.report.form.upload_limits')}</div>
+
+                                <div className="form-group slide-up stagger-2">
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                        <label className="form-label" style={{ margin: 0 }}>
+                                            <MapPin size={18} /> {t('incident.report.form.location')}
+                                        </label>
+                                        <button type="button" className="btn btn-sm btn-secondary" onClick={handleGetLocation} disabled={geoLoading}>
+                                            {geoLoading ? <Loader2 size={14} className="spin" /> : <Target size={14} />}
+                                            {geoLoading ? '...' : t('incident.report.form.my_position')}
+                                        </button>
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        <input className="form-control" type="text" placeholder={t('incident.report.form.address_placeholder')}
+                                            value={form.address} onChange={e => set('address', e.target.value)} required />
+                                    </div>
+                                </div>
+
+                                {form.lat && form.lng && (
+                                    <div className="slide-up stagger-3" style={{ height: 180, borderRadius: 12, overflow: 'hidden', marginBottom: 24, border: '1px solid var(--border)' }}>
+                                        <MapContainer center={[form.lat, form.lng]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
+                                            <TileLayer url={mapTileUrl} attribution="&copy; CARTO" />
+                                            <Marker position={[form.lat, form.lng]} icon={redIcon} />
+                                            <ChangeView center={[form.lat, form.lng]} />
+                                        </MapContainer>
+                                    </div>
+                                )}
                             </div>
-                            <input ref={fileInputRef} type="file" style={{ display: 'none' }}
-                                multiple accept="image/*" onChange={handleImageChange} />
-                            {previews.length > 0 && (
-                                <div className="image-previews" style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-                                    {previews.map((p, i) => (
-                                        <div key={i} className="image-preview" style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', position: 'relative', border: '1px solid var(--border)', flexShrink: 0 }}>
-                                            <img src={p} alt={`Aperçu ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
-                                            <button type="button" className="image-preview-remove" style={{ position: 'absolute', top: -6, right: -6, background: 'var(--brand-orange)', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 10, zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
-                                                onClick={(e) => { e.stopPropagation(); removeImage(i); }}><X size={12} strokeWidth={3} /></button>
+                        )}
+
+                        {step === 3 && (
+                            <div className="fade-in">
+                                <div className="form-group slide-up stagger-1">
+                                    <label className="form-label">
+                                        <Camera size={18} /> {t('incident.report.form.photos')}
+                                    </label>
+                                    <div className="upload-zone" onClick={() => fileInputRef.current?.click()} style={{ borderRadius: 12, border: '2px dashed var(--border)', padding: '24px', textAlign: 'center', cursor: 'pointer' }}>
+                                        <ImageIcon size={32} opacity={0.3} style={{ marginBottom: 12 }} />
+                                        <div style={{ fontWeight: 600 }}>{t('incident.report.form.upload_hint')}</div>
+                                        <input ref={fileInputRef} type="file" style={{ display: 'none' }} multiple accept="image/*" onChange={handleImageChange} />
+                                    </div>
+                                    {previews.length > 0 && (
+                                        <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+                                            {previews.map((p, i) => (
+                                                <div key={i} style={{ width: 64, height: 64, borderRadius: 8, overflow: 'hidden', position: 'relative', border: '1px solid var(--border)' }}>
+                                                    <img src={p} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    <button type="button" onClick={() => removeImage(i)} style={{ position: 'absolute', top: 0, right: 0, background: 'var(--brand-orange)', color: 'white', border: 'none', borderRadius: '50%', width: 18, height: 18, fontSize: 10, cursor: 'pointer' }}>×</button>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
-                            )}
-                        </div>
 
-                        <div className="form-group" style={{ background: 'var(--bg-secondary)', padding: '12px 16px', borderRadius: 12, marginBottom: 24 }}>
-                            <label className="toggle-label" style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                                <input type="checkbox" className="toggle-input"
-                                    checked={form.isAnonymous} onChange={e => set('isAnonymous', e.target.checked)} />
-                                <div className="toggle-switch" />
-                                <span style={{ fontSize: '0.875rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <Ghost size={16} /> {t('incident.report.form.anonymous')}
-                                </span>
-                            </label>
-                            {form.isAnonymous && (
-                                <p className="form-hint" style={{ fontSize: '0.75rem', marginTop: 8, color: 'var(--text-muted)', marginLeft: 44 }}>{t('incident.report.form.anonymous_hint')}</p>
-                            )}
-                        </div>
+                                <div className="form-group slide-up stagger-2" style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 12 }}>
+                                    <label className="toggle-label">
+                                        <input type="checkbox" className="toggle-input" checked={form.isAnonymous} onChange={e => set('isAnonymous', e.target.checked)} />
+                                        <div className="toggle-switch" />
+                                        <span style={{ fontSize: '0.875rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <Ghost size={16} /> {t('incident.report.form.anonymous')}
+                                        </span>
+                                    </label>
+                                </div>
 
-                        <button className="btn btn-primary btn-full btn-lg" type="submit" style={{ height: 52, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }} disabled={loading}>
-                            {loading ? (
-                                <Loader2 size={20} className="spin" />
-                            ) : <Send size={20} />}
-                            {loading ? t('incident.report.form.submitting') : t('incident.report.form.submit')}
-                        </button>
-                    </form>
+                                <div className="slide-up stagger-3" style={{ background: 'var(--brand-orange-pale)', padding: 16, borderRadius: 12, border: '1px solid var(--brand-orange-light)', marginBottom: 24 }}>
+                                    <p style={{ fontSize: '0.8rem', color: 'var(--brand-orange)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <Info size={16} /> {t('incident.report.summary.fast_validation.title')}
+                                    </p>
+                                    <p style={{ fontSize: '0.75rem', marginTop: 4 }}>{t('incident.report.summary.fast_validation.desc')}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
+                        {step > 1 && (
+                            <button className="btn btn-secondary" type="button" onClick={prevStep} style={{ flex: 1, height: 52, borderRadius: 12 }}>
+                                <ChevronLeft size={20} /> {t('common.previous')}
+                            </button>
+                        )}
+                        {step < 3 ? (
+                            <button className="btn btn-primary" type="button" onClick={nextStep} style={{ flex: 1, height: 52, borderRadius: 12, marginLeft: step === 1 ? 'auto' : 0, maxWidth: step === 1 ? '200px' : 'none' }}>
+                                {t('common.next')} <ChevronRight size={20} />
+                            </button>
+                        ) : (
+                            <button className="btn btn-primary" type="button" onClick={handleSubmit} style={{ flex: 2, height: 52, borderRadius: 12 }} disabled={loading}>
+                                {loading ? <Loader2 size={20} className="spin" /> : <Send size={20} />}
+                                {loading ? t('incident.report.form.submitting') : t('incident.report.form.submit')}
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    <div className="card" style={{ background: 'linear-gradient(135deg, var(--brand-navy), var(--brand-navy-light))', border: 'none', padding: 24, boxShadow: 'var(--shadow-lg)' }}>
-                        <p style={{ fontSize: '0.72rem', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <ClipboardCheck size={14} /> {t('incident.report.summary.title')}
+                {/* Right panel summary */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} className="slide-up stagger-2">
+                    <div className="card" style={{ background: 'linear-gradient(135deg, var(--brand-navy), var(--brand-navy-light))', border: 'none', padding: 24 }}>
+                        <p style={{ fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', marginBottom: 16 }}>
+                            {t('incident.report.summary.title')}
                         </p>
                         <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
-                            <div style={{ width: 52, height: 52, borderRadius: 12, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                {selectedCat ? (() => {
-                                    const Icon = selectedCat.icon;
-                                    return <Icon size={24} color="var(--brand-orange)" />;
-                                })() : <AlertTriangle size={24} color="var(--brand-orange)" />}
+                            <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {selectedCat && React.createElement(selectedCat.icon, { size: 20, color: 'var(--brand-orange)' })}
                             </div>
                             <div>
-                                <div style={{ fontSize: '1rem', fontWeight: 700, color: '#fff' }}>{selectedCat?.label || t('feed.categories.other')}</div>
-                                <span className={`badge badge-${form.severity}`} style={{ marginTop: 6, display: 'inline-block' }}>{selectedSev?.label}</span>
+                                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#fff' }}>{selectedCat?.label || '...'}</div>
+                                <span className={`badge badge-${form.severity}`} style={{ marginTop: 4, display: 'inline-block' }}>{selectedSev?.label}</span>
                             </div>
                         </div>
+                        {form.title && <div style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 600, marginBottom: 8 }}>{form.title}</div>}
                         {form.address && (
-                            <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', display: 'flex', gap: 10, alignItems: 'center', padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                <MapPin size={14} /> <span>{form.address}</span>
+                            <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', display: 'flex', gap: 8, alignItems: 'center' }}>
+                                <MapPin size={12} /> {form.address}
                             </div>
                         )}
-                    </div>
-
-                    <div className="card" style={{ borderLeft: '4px solid var(--yellow)', padding: 16 }}>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, color: '#b45309' }}>
-                            <Info size={16} /> {t('incident.report.summary.civic_reminder.title')}
-                        </p>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                            {t('incident.report.summary.civic_reminder.desc')}
-                        </p>
-                    </div>
-
-                    <div className="card" style={{ borderLeft: '4px solid #10b981', padding: 16 }}>
-                        <p style={{ fontSize: '0.85rem', fontWeight: 800, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, color: '#047857' }}>
-                            <CheckCircle2 size={16} /> {t('incident.report.summary.fast_validation.title')}
-                        </p>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                            {t('incident.report.summary.fast_validation.desc')}
-                        </p>
                     </div>
                 </div>
             </div>

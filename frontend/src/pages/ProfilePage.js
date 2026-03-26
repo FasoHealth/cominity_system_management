@@ -65,10 +65,13 @@ const ProfilePage = () => {
                 phone: user.phone || '',
                 city: user.location?.city || ''
             });
-            setAvatarPreview(user.avatar ? `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${user.avatar}` : null);
+            const avatarUrl = user.avatar
+                ? (user.avatar.startsWith('http') ? user.avatar : `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${user.avatar}`)
+                : null;
+            setAvatarPreview(avatarUrl);
         }
 
-        axios.get('/api/incidents/my').then(({ data }) => {
+        axios.get('/api/incidents/mes-signalements').then(({ data }) => {
             if (data.success) {
                 const incs = data.incidents;
                 setStats({

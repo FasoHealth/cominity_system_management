@@ -8,9 +8,9 @@ import './i18n';
 import App from './App';
 
 // Configuration Axios pour l'API
-axios.defaults.baseURL = process.env.NODE_ENV === 'production' 
-    ? 'https://cominity-system-management.onrender.com' 
-    : 'http://localhost:5000';
+axios.defaults.baseURL = process.env.NODE_ENV === 'production'
+    ? 'https://cominity-system-management.onrender.com'
+    : (process.env.REACT_APP_API_URL || 'http://localhost:5000');
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

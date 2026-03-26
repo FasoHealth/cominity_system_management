@@ -90,7 +90,7 @@ const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('/api/incidents/my').then(({ data }) => {
+        axios.get('/api/incidents/mes-signalements').then(({ data }) => {
             if (data.success) {
                 const incidents = data.incidents;
                 setStats({
@@ -105,8 +105,31 @@ const DashboardPage = () => {
         }).catch(console.error).finally(() => setLoading(false));
     }, [i18n.language]);
 
+
     if (loading) return (
-        <div className="page-loader"><div className="spinner" /><p>{t('dashboard.loading') || 'Chargement...'}</p></div>
+        <div className="page-container fade-in">
+            <div className="page-header">
+                <div className="skeleton" style={{ width: '200px', height: '32px' }} />
+                <div className="skeleton" style={{ width: '300px', height: '16px', marginTop: '8px' }} />
+            </div>
+
+            <div className="grid-4" style={{ marginBottom: 28 }}>
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="stat-card skeleton-stat" style={{ border: 'none' }} />
+                ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    <div className="card skeleton-card" style={{ height: '240px' }} />
+                    <div className="card skeleton-card" style={{ height: '300px' }} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    <div className="card skeleton-card" style={{ height: '220px' }} />
+                    <div className="card skeleton-card" style={{ height: '180px' }} />
+                </div>
+            </div>
+        </div>
     );
 
 
@@ -134,7 +157,7 @@ const DashboardPage = () => {
             {/* Stat cards */}
             <div className="grid-4" style={{ marginBottom: 28 }}>
                 {statCards.map((s, i) => (
-                    <div key={i} className="stat-card">
+                    <div key={i} className={`stat-card slide-up stagger-${i + 1}`}>
                         <div className="stat-icon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
                         <div className="stat-info">
                             <div className="stat-value" style={{ color: s.color }}>{s.value}</div>
@@ -150,7 +173,7 @@ const DashboardPage = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
                     {/* Bar chart */}
-                    <div className="card">
+                    <div className="card slide-up stagger-2">
                         <div className="card-header">
                             <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <BarChart3 size={18} color="var(--brand-orange)" /> {t('dashboard.chart.title')}
@@ -177,7 +200,7 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Recent incidents table */}
-                    <div className="card">
+                    <div className="card slide-up stagger-3">
                         <div className="card-header">
                             <h3 className="card-title">{t('dashboard.recent.title')}</h3>
                             <Link to="/my-incidents" className="btn btn-sm btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -236,7 +259,7 @@ const DashboardPage = () => {
 
                 {/* Right column: quick actions + tip */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                    <div className="card">
+                    <div className="card slide-up stagger-4">
                         <h3 className="card-title" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
                             <Zap size={18} color="var(--brand-orange)" /> {t('dashboard.actions.title')}
                         </h3>

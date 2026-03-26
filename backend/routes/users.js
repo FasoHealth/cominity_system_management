@@ -8,27 +8,13 @@ const router = express.Router();
 const User = require('../models/User');
 const Incident = require('../models/Incident');
 const { protect, adminOnly } = require('../middleware/auth');
+const { avatarStorage } = require('../config/cloudinary');
 const multer = require('multer');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 
-// ── Configuration Multer pour les avatars ─────────────────────────────────────
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/avatars/'),
-    filename: (req, file, cb) => {
-        const uniqueName = `avatar-${uuidv4()}${path.extname(file.originalname).toLowerCase()}`;
-        cb(null, uniqueName);
-    },
-});
-
+// ── Configuration Multer Cloudinary pour les avatars ───────────────────────────
 const upload = multer({
-    storage,
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2 Mo max pour un avatar
-    fileFilter: (req, file, cb) => {
-        const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        if (allowed.includes(file.mimetype)) cb(null, true);
-        else cb(new Error('Format non autorisé. Utilisez jpg, png ou webp.'));
-    }
+    storage: avatarStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -73,6 +59,35 @@ router.get('/', protect, adminOnly, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/users/stats — Statistiques pour le dashboard admin
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /users/stats:
+ *   get:
+ *     summary: Récupérer les statistiques globales pour le dashboard admin
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Statistiques récupérées avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     users: { type: object }
+ *                     incidents: { type: object }
+ *                     byCategory: { type: array }
+ *                     bySeverity: { type: array }
+ *                     last7Days: { type: array }
+ *                     monthlyTrend: { type: array }
+ *                     resolutionRateByCategory: { type: array }
+ *                     topReporters: { type: array }
+ */
 router.get('/stats', protect, adminOnly, async (req, res) => {
     try {
         // Statistiques utilisateurs
@@ -97,19 +112,62 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
             { $group: { _id: '$severity', count: { $sum: 1 } } },
         ]);
 
-        // Incidents des 7 derniers jours (pour graphique)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        // Incidents des 6 derniers mois (pour graphique)
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+        sixMonthsAgo.setDate(1); // Début du mois
 
-        const last7Days = await Incident.aggregate([
-            { $match: { createdAt: { $gte: sevenDaysAgo } } },
+        const monthlyTrend = await Incident.aggregate([
+            { $match: { createdAt: { $gte: sixMonthsAgo } } },
             {
                 $group: {
-                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    _id: { $dateToString: { format: '%Y-%m', date: '$createdAt' } },
                     count: { $sum: 1 },
                 },
             },
             { $sort: { _id: 1 } },
+        ]);
+
+        // Taux de résolution par catégorie
+        const resolutionRateByCategory = await Incident.aggregate([
+            {
+                $group: {
+                    _id: '$category',
+                    total: { $sum: 1 },
+                    resolved: { $sum: { $cond: [{ $eq: ['$status', 'resolved'] }, 1, 0] } }
+                }
+            },
+            {
+                $project: {
+                    rate: { $multiply: [{ $divide: ['$resolved', '$total'] }, 100] },
+                    total: 1,
+                    resolved: 1
+                }
+            },
+            { $sort: { total: -1 } }
+        ]);
+
+        // Top 5 Citoyens (ceux qui signalent le plus)
+        const topReporters = await Incident.aggregate([
+            { $group: { _id: '$reportedBy', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'userInfo'
+                }
+            },
+            { $unwind: '$userInfo' },
+            {
+                $project: {
+                    name: '$userInfo.name',
+                    email: '$userInfo.email',
+                    count: 1
+                }
+            }
         ]);
 
         res.json({
@@ -125,7 +183,9 @@ router.get('/stats', protect, adminOnly, async (req, res) => {
                 },
                 byCategory,
                 bySeverity,
-                last7Days,
+                monthlyTrend,
+                resolutionRateByCategory,
+                topReporters
             },
         });
     } catch (err) {
@@ -184,14 +244,13 @@ router.put('/profile', protect, upload.single('avatar'), async (req, res) => {
 
         const { lat, lng } = req.body;
         if (lat && lng) {
-            user.location.coordinates = {
-                type: 'Point',
-                coordinates: [parseFloat(lng), parseFloat(lat)]
-            };
+            if (!user.location) user.location = {};
+            user.location.type = 'Point';
+            user.location.coordinates = [parseFloat(lng), parseFloat(lat)];
         }
 
         if (req.file) {
-            user.avatar = `/uploads/avatars/${req.file.filename}`;
+            user.avatar = req.file.path; // URL Cloudinary
         }
 
         await user.save({ validateBeforeSave: false });
@@ -212,6 +271,34 @@ router.put('/profile', protect, upload.single('avatar'), async (req, res) => {
     } catch (err) {
         console.error('Erreur PUT /api/users/profile :', err.message);
         res.status(500).json({ success: false, message: 'Erreur serveur lors de la mise à jour.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/users/fcm-token — Enregistrer un token FCM pour les notifications
+// ─────────────────────────────────────────────────────────────────────────────
+router.post('/fcm-token', protect, async (req, res) => {
+    try {
+        const { fcmToken } = req.body;
+        if (!fcmToken) {
+            return res.status(400).json({ success: false, message: 'Token manquant.' });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Utilisateur introuvable.' });
+        }
+
+        user.fcmToken = fcmToken;
+        await user.save({ validateBeforeSave: false });
+
+        res.json({
+            success: true,
+            message: 'Token FCM mis à jour.',
+        });
+    } catch (err) {
+        console.error('Erreur POST /fcm-token :', err.message);
+        res.status(500).json({ success: true, message: 'Erreur serveur.' });
     }
 });
 

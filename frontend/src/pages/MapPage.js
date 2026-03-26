@@ -61,6 +61,25 @@ const createMarker = (color) => L.divIcon({
     iconSize: [24, 24], iconAnchor: [12, 12], popupAnchor: [0, -12],
 });
 
+const createClusterIcon = (count, color) => L.divIcon({
+    className: 'custom-cluster-icon',
+    html: `<div style="width:36px;height:36px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 0 15px ${color}aa;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:14px;position:relative;">
+            ${count}
+            <div style="position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <div style="width:6px;height:6px;background:${color};border-radius:50%;"></div>
+            </div>
+           </div>`,
+    iconSize: [36, 36], iconAnchor: [18, 18], popupAnchor: [0, -18],
+});
+
+const MapEvents = ({ onZoom }) => {
+    const map = useMap();
+    useEffect(() => {
+        map.on('zoomend', () => onZoom(map.getZoom()));
+    }, [map, onZoom]);
+    return null;
+};
+
 const FlyTo = ({ pos }) => {
     const map = useMap();
     useEffect(() => {
@@ -111,7 +130,6 @@ const MapPage = () => {
         if (h < 24) return t('feed.time.hour', { count: h });
         return new Date(date).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US');
     }
-
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [category, setCategory] = useState('');
@@ -146,21 +164,86 @@ const MapPage = () => {
         }).catch(console.error).finally(() => setLoading(false));
     }, []);
 
-    const filtered = incidents.filter(inc => {
+
+    const [timeFilter, setTimeFilter] = useState('all'); // all, today, week, month
+
+    const TIME_PILLS = [
+        { value: 'all', label: t('map.time_all') },
+        { value: 'today', label: t('map.time_today') },
+        { value: 'week', label: t('map.time_week') },
+        { value: 'month', label: t('map.time_month') },
+    ];
+
+    const isWithinTime = (date, filter) => {
+        const d = new Date(date);
+        const now = new Date();
+        if (filter === 'today') return d.toDateString() === now.toDateString();
+        if (filter === 'week') {
+            const weekAgo = new Date(now.setDate(now.getDate() - 7));
+            return d >= weekAgo;
+        }
+        if (filter === 'month') {
+            const monthAgo = new Date(now.setMonth(now.getMonth() - 1));
+            return d >= monthAgo;
+        }
+        return true;
+    };
+
+    const filtered = React.useMemo(() => incidents.filter(inc => {
         const matchCat = !category || inc.category === category;
+        const matchTime = isWithinTime(inc.createdAt, timeFilter);
         const matchSearch = !searchVal ||
             inc.title.toLowerCase().includes(searchVal.toLowerCase()) ||
             inc.location?.address?.toLowerCase().includes(searchVal.toLowerCase());
-        return matchCat && matchSearch;
-    });
+        return matchCat && matchSearch && matchTime;
+    }), [incidents, category, timeFilter, searchVal]);
 
-    const withDist = filtered.map(inc => {
+    const withDist = React.useMemo(() => filtered.map(inc => {
         const coords = inc.location?.coordinates?.coordinates;
         const dist = (coords && coords.length === 2)
             ? haversineKm(center[0], center[1], coords[1], coords[0])
             : 999;
         return { ...inc, dist };
-    }).sort((a, b) => a.dist - b.dist);
+    }).sort((a, b) => a.dist - b.dist), [filtered, center]);
+
+    // Manual Grid-based Clustering
+    const getClusters = (items, zoom) => {
+        const gridSize = 0.01 * (20 - zoom); // Adjust sensitivity based on zoom
+        const grid = {};
+
+        items.forEach(item => {
+            const coords = item.location?.coordinates?.coordinates;
+            if (!coords) return;
+            const gridX = Math.floor(coords[0] / gridSize);
+            const gridY = Math.floor(coords[1] / gridSize);
+            const key = `${gridX}_${gridY}`;
+
+            if (!grid[key]) {
+                grid[key] = {
+                    id: key,
+                    count: 0,
+                    incidents: [],
+                    pos: [coords[1], coords[0]],
+                    severity: item.severity
+                };
+            }
+            grid[key].count++;
+            grid[key].incidents.push(item);
+            // Highest severity wins for cluster color
+            const sevWeight = { critical: 4, high: 3, medium: 2, low: 1 };
+            if (sevWeight[item.severity] > sevWeight[grid[key].severity]) {
+                grid[key].severity = item.severity;
+            }
+        });
+
+        return Object.values(grid);
+    };
+
+    const [zoomLevel, setZoomLevel] = useState(13);
+
+    const clusters = React.useMemo(() =>
+        getClusters(filtered, zoomLevel),
+        [filtered, zoomLevel]);
 
     const handleItemClick = (inc) => {
         setActiveId(inc._id);
@@ -209,8 +292,19 @@ const MapPage = () => {
                         />
                     </div>
 
+                    {/* Time filter pills */}
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                        {TIME_PILLS.map(c => (
+                            <button key={c.value} className={`pill${timeFilter === c.value ? ' active' : ''}`}
+                                style={{ fontSize: '0.65rem', padding: '2px 10px', opacity: 0.8 }}
+                                onClick={() => setTimeFilter(c.value)}>
+                                {c.label}
+                            </button>
+                        ))}
+                    </div>
+
                     {/* Category pills */}
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
                         {CAT_PILLS.map(c => (
                             <button key={c.value} className={`pill${category === c.value ? ' active' : ''}`}
                                 style={{ fontSize: '0.72rem', padding: '4px 12px' }}
@@ -278,8 +372,9 @@ const MapPage = () => {
                         style={{ width: '100%', paddingLeft: 44, borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-primary)', height: 48, boxShadow: 'var(--shadow-sm)' }} />
                 </div>
 
-                <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+                <MapContainer center={center} zoom={zoomLevel} style={{ height: '100%', width: '100%' }} zoomControl={false}>
                     <TileLayer url={mapTile} attribution="&copy; CARTO" />
+                    <MapEvents onZoom={setZoomLevel} />
                     {flyTo && <FlyTo pos={flyTo} />}
 
                     {/* User position marker */}
@@ -300,36 +395,84 @@ const MapPage = () => {
                         pathOptions={{ color: '#E8541A', fillColor: '#E8541A', fillOpacity: 0.06, dashArray: '8 6', weight: 2 }}
                     />
 
-                    {/* Markers */}
-                    {withDist.filter(inc => inc.location?.coordinates?.coordinates).map(inc => {
-                        const coords = inc.location.coordinates.coordinates;
+                    {/* Clusters / Markers */}
+                    {clusters.map(cluster => {
+                        if (cluster.count === 1) {
+                            const inc = cluster.incidents[0];
+                            return (
+                                <Marker
+                                    key={inc._id}
+                                    position={cluster.pos}
+                                    icon={createMarker(SEV_COLORS[inc.severity])}
+                                    eventHandlers={{ click: () => setActiveId(inc._id) }}
+                                >
+                                    <Popup>
+                                        <div style={{ minWidth: 220, padding: 4 }}>
+                                            <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                                                <span className={`badge badge-${inc.category}`} style={{ fontSize: '0.65rem' }}>{CAT_LABELS[inc.category]}</span>
+                                                <span className={`badge badge-${inc.severity}`} style={{ fontSize: '0.65rem' }}>{SEV_LABELS[inc.severity]}</span>
+                                            </div>
+                                            <h4 style={{ margin: '0 0 6px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{inc.title}</h4>
+                                            <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                <MapPin size={10} /> {inc.location.address}
+                                            </p>
+                                            <button className="btn btn-primary btn-sm btn-full" onClick={() => navigate(`/incidents/${inc._id}`)}>
+                                                {t('map.details_btn')} <ChevronRight size={14} />
+                                            </button>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            );
+                        }
+
+                        // Cluster Marker
                         return (
                             <Marker
-                                key={inc._id}
-                                position={[coords[1], coords[0]]}
-                                icon={createMarker(SEV_COLORS[inc.severity])}
-                                eventHandlers={{ click: () => setActiveId(inc._id) }}
+                                key={cluster.id}
+                                position={cluster.pos}
+                                icon={createClusterIcon(cluster.count, SEV_COLORS[cluster.severity])}
                             >
                                 <Popup>
-                                    <div style={{ minWidth: 220, padding: 4 }}>
-                                        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                                            <span className={`badge badge-${inc.category}`} style={{ fontSize: '0.65rem' }}>{CAT_LABELS[inc.category]}</span>
-                                            <span className={`badge badge-${inc.severity}`} style={{ fontSize: '0.65rem' }}>{SEV_LABELS[inc.severity]}</span>
-                                            {inc.upvoteCount > 0 && <span style={{ fontSize: '0.65rem', color: 'var(--brand-orange)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}><ThumbsUp size={10} /> {inc.upvoteCount}</span>}
+                                    <div style={{ minWidth: 200 }}>
+                                        <h4 style={{ margin: '0 0 8px', fontSize: '0.85rem', fontWeight: 800 }}>{cluster.count} {t('map.cluster_incidents')}</h4>
+                                        <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                            {cluster.incidents.slice(0, 5).map(inc => (
+                                                <div key={inc._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'var(--bg-secondary)', borderRadius: 8, cursor: 'pointer' }} onClick={() => navigate(`/incidents/${inc._id}`)}>
+                                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inc.title}</span>
+                                                    <ChevronRight size={14} color="var(--brand-orange)" />
+                                                </div>
+                                            ))}
+                                            {cluster.count > 5 && <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textAlign: 'center', padding: 4 }}>+ {cluster.count - 5} autres...</div>}
                                         </div>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{inc.title}</h4>
-                                        <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            <MapPin size={10} /> {inc.location.address}
-                                        </p>
-                                        <button className="btn btn-primary btn-sm btn-full" style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }} onClick={() => navigate(`/incidents/${inc._id}`)}>
-                                            {t('map.details_btn')} <ChevronRight size={14} />
-                                        </button>
                                     </div>
                                 </Popup>
                             </Marker>
                         );
                     })}
                 </MapContainer>
+
+
+                {/* Stats Overlay */}
+                <div className="map-stats-overlay slide-up">
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                        <div className="stat-mini">
+                            <span className="stat-mini-label">{t('dashboard.stats.total')}</span>
+                            <span className="stat-mini-value">{withDist.length}</span>
+                        </div>
+                        <div className="stat-mini-divider" />
+                        <div style={{ display: 'flex', gap: 12 }}>
+                            {['critical', 'high'].map(sev => {
+                                const count = withDist.filter(i => i.severity === sev).length;
+                                if (count === 0) return null;
+                                return (
+                                    <div key={sev} className={`stat-mini-pill ${sev}`}>
+                                        <AlertTriangle size={12} /> {count}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
 
                 {/* Floating CTA */}
                 <div style={{ position: 'absolute', bottom: 32, right: 32, zIndex: 400 }}>

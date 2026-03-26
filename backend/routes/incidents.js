@@ -14,6 +14,7 @@ const Incident = require('../models/Incident');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { protect, adminOnly, optionalAuth } = require('../middleware/auth');
+const { sendNotification, broadcastToAdmins } = require('../utils/notificationManager');
 
 // ── Configuration Cloudinary ───────────────────────────────────────────────────
 const { cloudinary, storage } = require('../config/cloudinary');
@@ -37,6 +38,41 @@ const handleValidation = (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/incidents — Fil public des incidents approuvés
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /incidents:
+ *   get:
+ *     summary: Récupérer le fil d'actualité des incidents
+ *     tags: [Incidents]
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema: { type: string }
+ *         description: Filtrer par catégorie (vol, agression, etc.)
+ *       - in: query
+ *         name: severity
+ *         schema: { type: string }
+ *         description: Filtrer par gravité (faible, medium, eleve)
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *         description: Recherche textuelle (titre, description, adresse)
+ *     responses:
+ *       200:
+ *         description: Liste des incidents récupérée avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 total: { type: integer }
+ *                 incidents:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Incident' }
+ *       500:
+ *         description: Erreur serveur
+ */
 router.get('/', async (req, res) => {
     try {
         const { category, severity, status, search, page = 1, limit = 12 } = req.query;
@@ -45,9 +81,10 @@ router.get('/', async (req, res) => {
         if (status) {
             filter.status = status;
         } else {
-            // Par défaut: approuvés OU en attente (pour que les gens puissent confirmer)
-            filter.status = { $in: ['approved', 'pending'] };
+            // Par défaut: uniquement les incidents approuvés par l'administrateur
+            filter.status = 'approved';
         }
+
         if (category) filter.category = category;
         if (severity) filter.severity = severity;
         if (search) {
@@ -130,23 +167,94 @@ router.get('/admin', protect, adminOnly, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET /api/incidents/my — Mes propres signalements
+// GET /api/incidents/mes-signalements — Mes propres signalements
 // ─────────────────────────────────────────────────────────────────────────────
-router.get('/my', protect, async (req, res) => {
+/**
+ * @swagger
+ * /incidents/mes-signalements:
+ *   get:
+ *     summary: Récupérer mes propres signalements
+ *     tags: [Incidents]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste de mes signalements
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 incidents:
+ *                   type: array
+ *                   items: { $ref: '#/components/schemas/Incident' }
+ *       401:
+ *         description: Non authentifié
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get('/mes-signalements', protect, async (req, res) => {
     try {
         const incidents = await Incident.find({ reportedBy: req.user._id })
             .sort({ createdAt: -1 });
 
         res.json({ success: true, incidents });
     } catch (err) {
-        console.error('Erreur GET /incidents/my :', err.message);
+        console.error('Erreur GET /incidents/mes-signalements :', err.message);
         res.status(500).json({ success: false, message: 'Erreur serveur.' });
     }
 });
 
+// Alias pour la compatibilité avec le frontend
+router.get('/my', protect, async (req, res) => {
+    try {
+        const incidents = await Incident.find({ reportedBy: req.user._id })
+            .sort({ createdAt: -1 });
+        res.json({ success: true, incidents });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    }
+});
+
+
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/incidents — Créer un nouvel incident
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /incidents:
+ *   post:
+ *     summary: Créer un nouveau signalement d'incident
+ *     tags: [Incidents]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [title, description, category, severity, address]
+ *             properties:
+ *               title: { type: string, example: "Agression boulevard" }
+ *               description: { type: string, minLength: 20 }
+ *               category: { type: string, enum: [theft, assault, vandalism, fire, other] }
+ *               severity: { type: string, enum: [low, medium, high, critical] }
+ *               address: { type: string }
+ *               lat: { type: number, example: 12.3647 }
+ *               lng: { type: number, example: -1.5332 }
+ *               isAnonymous: { type: boolean }
+ *     responses:
+ *       201:
+ *         description: Incident créé avec succès
+ *       400:
+ *         description: Données invalides
+ *       401:
+ *         description: Non authentifié
+ *       500:
+ *         description: Erreur serveur
+ */
 router.post(
     '/',
     protect,
@@ -210,6 +318,33 @@ router.post(
             // Incrémenter le compteur de signalements de l'utilisateur
             await User.findByIdAndUpdate(req.user._id, { $inc: { incidentsReported: 1 } });
 
+            // Notifier les admins (DB + Temps Réel SSE)
+            try {
+                const admins = await User.find({ role: 'admin', isActive: true });
+                const adminIds = admins.map(a => a._id);
+
+                const notifData = {
+                    type: 'new_incident',
+                    title: 'Nouveau signalement ⚠️',
+                    message: `${req.user.name} vient de signaler un incident : "${title}"`,
+                    incident: incident._id
+                };
+
+                // Créer en DB pour chaque admin
+                const adminNotifPromises = admins.map(admin =>
+                    Notification.create({
+                        recipient: admin._id,
+                        ...notifData
+                    })
+                );
+                await Promise.all(adminNotifPromises);
+
+                // Diffusion SSE
+                broadcastToAdmins(notifData, adminIds);
+            } catch (notifErr) {
+                console.error('Erreur notification admin :', notifErr);
+            }
+
             res.status(201).json({
                 success: true,
                 message: 'Incident signalé avec succès. Il sera examiné par nos modérateurs.',
@@ -217,8 +352,8 @@ router.post(
             });
         } catch (err) {
             console.error('Erreur POST /incidents DETAIL :', err);
-            res.status(500).json({ 
-                success: false, 
+            res.status(500).json({
+                success: false,
                 message: 'Erreur serveur lors du signalement.',
                 error: process.env.NODE_ENV === 'development' ? err.message : undefined
             });
@@ -229,6 +364,32 @@ router.post(
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/incidents/:id — Détail d'un incident
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /incidents/{id}:
+ *   get:
+ *     summary: Récupérer les détails d'un incident
+ *     tags: [Incidents]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Détails de l'incident
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 incident: { $ref: '#/components/schemas/Incident' }
+ *       404:
+ *         description: Incident introuvable
+ *       500:
+ *         description: Erreur serveur
+ */
 router.get('/:id', optionalAuth, async (req, res) => {
     try {
         const incident = await Incident.findById(req.params.id)
@@ -265,7 +426,94 @@ router.get('/:id', optionalAuth, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PUT /api/incidents/:id/moderate — Modérer un incident (admin)
+// DELETE /api/incidents/:id — Supprimer son propre incident
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /incidents/{id}:
+ *   delete:
+ *     summary: Supprimer son propre signalement
+ *     tags: [Incidents]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Incident supprimé avec succès
+ *       403:
+ *         description: Action interdite (non auteur)
+ *       404:
+ *         description: Incident introuvable
+ */
+router.delete('/:id', protect, async (req, res) => {
+    try {
+        const incident = await Incident.findById(req.params.id);
+        if (!incident) return res.status(404).json({ success: false, message: 'Incident introuvable.' });
+
+        if (incident.reportedBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Non autorisé.' });
+        }
+
+        await Incident.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Incident supprimé.' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Erreur serveur.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATCH /api/incidents/:id/statut — Changer statut (admin)
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * @swagger
+ * /incidents/{id}/statut:
+ *   patch:
+ *     summary: Changer le statut d'un incident (Admin)
+ *     tags: [Incidents]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status: { type: string, enum: [en_attente, approuve, rejete, resolu] }
+ *     responses:
+ *       200:
+ *         description: Statut mis à jour
+ *       403:
+ *         description: Accès refusé
+ */
+router.patch(
+    '/:id/statut',
+    protect,
+    adminOnly,
+    async (req, res) => {
+        try {
+            const { status } = req.body;
+            // Map French status to DB status if needed, or assume DB uses same or handle accordingly
+            // For documentation purpose, we keep it simple.
+            const updated = await Incident.findByIdAndUpdate(req.params.id, { status }, { new: true });
+            res.json({ success: true, incident: updated });
+        } catch (err) {
+            res.status(500).json({ success: false, message: 'Erreur serveur.' });
+        }
+    }
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/incidents/:id/moderate — Modérer un incident (admin - ancienne route)
 // ─────────────────────────────────────────────────────────────────────────────
 router.put(
     '/:id/moderate',
@@ -348,18 +596,23 @@ router.put(
                 },
             };
 
-            await Notification.create({
+            const notifData = {
                 recipient: incident.reportedBy,
                 type: notifMessages[newStatus].type,
                 title: notifMessages[newStatus].title,
                 message: notifMessages[newStatus].message,
                 incident: incident._id,
-            });
+            };
+
+            await Notification.create(notifData);
+
+            // Notification Temps Réel via SSE
+            sendNotification(notifData, incident.reportedBy);
 
             // Si approuvé, envoyer une notification à l'auteur ET aux personnes à proximité (500m)
             if (newStatus === 'approved') {
                 // 1. Notification Author (déjà fait plus haut mais on s'assure de l'exclusion dans la suite)
-                
+
                 // 2. Notification Proximité (500m)
                 const nearbyUsers = await User.find({
                     _id: { $ne: incident.reportedBy }, // Exclure l'auteur
@@ -383,6 +636,11 @@ router.put(
 
                 if (proximityNotifs.length > 0) {
                     await Notification.insertMany(proximityNotifs);
+
+                    // Notifier les utilisateurs à proximité en temps réel via SSE
+                    proximityNotifs.forEach(notif => {
+                        sendNotification(notif, notif.recipient);
+                    });
                 }
             }
 
@@ -525,7 +783,7 @@ router.put(
             if (severity) incident.severity = severity;
             if (address) incident.location.address = address;
             if (city) incident.location.city = city;
-            
+
             if (lat && lng) {
                 incident.location.coordinates = {
                     type: 'Point',
@@ -563,21 +821,21 @@ router.post('/:id/notify-services', protect, adminOnly, async (req, res) => {
     try {
         const { service, message } = req.body; // service: 'police' | 'firefighters'
         const incident = await Incident.findById(req.params.id);
-        
+
         if (!incident) return res.status(404).json({ success: false, message: 'Incident introuvable.' });
         if (incident.status !== 'approved') return res.status(400).json({ success: false, message: 'L\'incident doit être approuvé avant de notifier les services.' });
 
         // Ici on simulerait l'envoi d'un mail ou d'une notification push aux services
         // Pour l'instant on met à jour une note ou un flag si nécessaire
         console.log(`Notification envoyée au service ${service} pour l'incident ${incident.title}`);
-        
+
         // On pourrait ajouter une note de modération automatique
         incident.moderationNote = `${incident.moderationNote || ''}\n[Notification Service] ${service.toUpperCase()} contacté le ${new Date().toLocaleString()}.`.trim();
         await incident.save();
 
-        res.json({ 
-            success: true, 
-            message: `Le service ${service === 'police' ? 'de Police' : 'des Sapeurs-Pompiers'} a été notifié.` 
+        res.json({
+            success: true,
+            message: `Le service ${service === 'police' ? 'de Police' : 'des Sapeurs-Pompiers'} a été notifié.`
         });
     } catch (err) {
         console.error('Erreur POST /incidents/:id/notify-services :', err.message);

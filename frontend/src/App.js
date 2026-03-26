@@ -20,6 +20,7 @@ import SupportAppealPage from './pages/SupportAppealPage';
 import EditIncidentPage from './pages/EditIncidentPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 
 // Admin pages
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
@@ -45,6 +46,7 @@ const AppRoutes = () => (
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
         <Route path="/support-appeal" element={<SupportAppealPage />} />
         <Route path="/" element={<LandingPage />} />
 
@@ -71,13 +73,17 @@ const AppRoutes = () => (
     </Routes>
 );
 
+import { NotificationProvider } from './context/NotificationContext';
+
 function App() {
     return (
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <ThemeProvider>
                 <AuthProvider>
-                    <InstallAppBanner />
-                    <AppRoutes />
+                    <NotificationProvider>
+                        <InstallAppBanner />
+                        <AppRoutes />
+                    </NotificationProvider>
                 </AuthProvider>
             </ThemeProvider>
         </Router>

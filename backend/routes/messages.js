@@ -10,6 +10,13 @@ const Incident = require('../models/Incident');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const { protect } = require('../middleware/auth');
+const multer = require('multer');
+const { messageStorage } = require('../config/cloudinary');
+
+const upload = multer({
+    storage: messageStorage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10 Mo max pour audio/video
+});
 
 // ── GET /api/messages/:incidentId — Récupérer les messages d'un incident ──────
 router.get('/:incidentId', protect, async (req, res) => {
@@ -49,9 +56,24 @@ router.get('/:incidentId', protect, async (req, res) => {
 });
 
 // ── POST /api/messages/:incidentId — Envoyer un message ──────────────────────
-router.post('/:incidentId', protect, async (req, res) => {
+router.post('/:incidentId', protect, (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+        if (err) {
+            console.error('--- ERREUR MULTER MESSAGES ---');
+            console.error(err);
+            return res.status(400).json({ success: false, message: `Erreur de fichier : ${err.message}` });
+        }
+        next();
+    });
+}, async (req, res) => {
     try {
+        console.log('--- NOUVEAU MESSAGE ADAPTÉ ---');
+        console.log('ID :', req.params.incidentId);
+        console.log('BODY :', req.body);
+        console.log('FILE :', req.file);
+
         const { content } = req.body;
+        let { type } = req.body;
         const incident = await Incident.findById(req.params.incidentId);
 
         if (!incident) {
@@ -59,14 +81,41 @@ router.post('/:incidentId', protect, async (req, res) => {
         }
 
         // Vérifier les permissions
-        if (req.user.role !== 'admin' && incident.reportedBy.toString() !== req.user._id.toString()) {
+        const reporterId = incident.reportedBy?._id || incident.reportedBy;
+        if (req.user.role !== 'admin' && reporterId.toString() !== req.user._id.toString()) {
             return res.status(403).json({ success: false, message: 'Accès refusé.' });
+        }
+
+        const attachments = [];
+        if (req.file) {
+            attachments.push({
+                filename: req.file.originalname,
+                path: req.file.path,
+                mimetype: req.file.mimetype
+            });
+
+            // Déduire le type si non fourni
+            if (!type) {
+                if (req.file.mimetype.startsWith('image/')) type = 'image';
+                else if (req.file.mimetype.startsWith('video/')) type = 'video';
+                else if (req.file.mimetype.startsWith('audio/')) type = 'audio';
+                else type = 'file';
+            }
+        }
+
+        if (!type) type = 'text';
+
+        // Un message doit avoir du contenu OU un fichier
+        if (!content && attachments.length === 0) {
+            return res.status(400).json({ success: false, message: 'Le message ne peut pas être vide.' });
         }
 
         const message = await Message.create({
             incident: incident._id,
             sender: req.user._id,
+            type,
             content,
+            attachments,
             readBy: [req.user._id]
         });
 
@@ -108,7 +157,7 @@ router.post('/:incidentId', protect, async (req, res) => {
         if (err.name === 'ValidationError') {
             return res.status(400).json({ success: false, message: 'Données de message invalides.', errors: err.errors });
         }
-        res.status(500).json({ success: false, message: 'Erreur lors de l\'envoi du message.' });
+        res.status(500).json({ success: false, message: 'Erreur lors de l\'envoi du message.', error: err.message });
     }
 });
 

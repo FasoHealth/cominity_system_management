@@ -51,7 +51,7 @@ const InstallAppBanner = () => {
                     {t('app.install_prompt.desc')}
                 </p>
                 <div style={{ display: 'flex', gap: 10 }}>
-                    <button className="btn btn-primary btn-sm" style={{ padding: '6px 12px', fontSize: '0.75rem', gap: 6, display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => alert(t('landing.app_download_alert'))}>
+                    <button className="btn btn-primary btn-sm" style={{ padding: '6px 12px', fontSize: '0.75rem', gap: 6, display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => window.open('https://drive.google.com/file/d/1r3M2ti4nFx-yS0IpvI6WEAXqivX4Th25/view?usp=drive_link', '_blank')}>
                         <Download size={14} /> {t('app.install_prompt.btn')}
                     </button>
                 </div>

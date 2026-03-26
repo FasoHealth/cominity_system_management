@@ -110,7 +110,8 @@
     "empty_title": "Aucun message",
     "empty_admin": "Démarrez la conversation pour aider le citoyen.",
     "empty_citizen": "L'administration pourra vous contacter ici pour plus d'informations.",
-    "placeholder": "Répondre..."
+    "placeholder": "Répondre...",
+    "download_file": "Télécharger le fichier"
   },
   "dashboard": {
     "greeting": "Bonjour, {{name}}",
@@ -251,6 +252,11 @@
     "report": {
       "title": "Signaler un incident",
       "subtitle": "Aidez la communauté en signalant un problème de sécurité localement.",
+      "steps": {
+        "classification": "Classification",
+        "details": "Détails & Lieu",
+        "review": "Validation"
+      },
       "geo_not_supported": "Géolocalisation non supportée.",
       "geo_address_error": "Position récupérée, mais adresse introuvable automatiquement.",
       "geo_denied": "Localisation refusée.",
@@ -322,7 +328,12 @@
     "report_cta": "SIGNALER UN INCIDENT",
     "legend_gravity": "Gravité",
     "unit_m": "m",
-    "unit_km": "km"
+    "unit_km": "km",
+    "time_all": "Toutes les dates",
+    "time_today": "Aujourd'hui",
+    "time_week": "7 derniers jours",
+    "time_month": "30 derniers jours",
+    "cluster_incidents": "incidents dans cette zone"
   },
   "profile": {
     "title": "Paramètres du profil",
@@ -426,8 +437,18 @@
         "appeals": "Recours Compte"
       },
       "charts": {
+        "monthly_trend": "Tendance mensuelle (6 mois)",
         "daily_title": "Incidents des 7 derniers jours",
         "category_title": "Répartition par Catégorie"
+      },
+      "export": "Exporter Liste (CSV)",
+      "resolution_rate": "Efficacité par Catégorie",
+      "top_reporters": "Top Citoyens (Signalements)",
+      "manage_users": "Gérer tous les utilisateurs",
+      "table": {
+        "category": "Catégorie",
+        "total": "Total",
+        "rate": "Taux"
       }
     },
     "incidents": {
@@ -518,5 +539,15 @@
       "btn": "Télécharger l'App",
       "close": "Fermer"
     }
+  },
+  "common": {
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "back": "Retour",
+    "close": "Fermer",
+    "confirm": "Confirmer"
   }
 }

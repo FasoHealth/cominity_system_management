@@ -79,8 +79,12 @@ const IncidentFeedPage = () => {
             if (data.success) {
                 // Filter incidents older than 48 hours
                 const fortyEightHoursAgo = Date.now() - 48 * 60 * 60 * 1000;
-                const filtered = data.incidents.filter(inc => new Date(inc.createdAt).getTime() > fortyEightHoursAgo);
+                const filtered = data.incidents.filter(inc =>
+                    new Date(inc.createdAt).getTime() > fortyEightHoursAgo &&
+                    inc.status === 'approved'
+                );
                 setIncidents(filtered);
+
                 setTotalPages(data.pages || 1);
             }
         } catch (err) {
@@ -148,8 +152,13 @@ const IncidentFeedPage = () => {
                 </div>
             </div>
 
+
             {loading ? (
-                <div className="page-loader"><div className="spinner" /><p>{t('feed.loading')}</p></div>
+                <div className="grid-3" style={{ gap: 24 }}>
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="card skeleton-card" style={{ height: '320px' }} />
+                    ))}
+                </div>
             ) : incidents.length > 0 ? (
                 <>
                     <div className="grid-3" style={{ gap: 24 }}>
