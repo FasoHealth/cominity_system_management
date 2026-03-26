@@ -56,7 +56,11 @@ const RegisterPage = () => {
 
             const { data } = await axios.post('/api/auth/register', payload);
             if (data.success) {
-                const verifLink = `${window.location.origin}/verify-email/${data.verificationToken}`;
+                // Utilisation de l'URL de production si disponible, sinon fallback sur l'origine actuelle
+                const baseUrl = process.env.NODE_ENV === 'production' 
+                    ? 'https://cs-alert.netlify.app' 
+                    : window.location.origin;
+                const verifLink = `${baseUrl}/verify-email/${data.verificationToken}`;
 
                 try {
                     await emailjs.send(
@@ -100,21 +104,8 @@ const RegisterPage = () => {
                         <h2 style={{ marginBottom: 12 }}>{t('auth.register.success_title', 'Vérifiez votre email')}</h2>
                         <p style={{ color: '#666', marginBottom: 32 }}>{successData.message}</p>
 
-                        {successData.token && (
-                            <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', padding: '20px', borderRadius: 12, marginBottom: 32 }}>
-                                <p style={{ fontSize: '0.85rem', marginBottom: 12, color: '#475569' }}>
-                                    <Zap size={14} style={{ marginRight: 6 }} />
-                                    <strong>Mode Développement:</strong> Cliquez ci-dessous pour simuler la vérification.
-                                </p>
-                                <button
-                                    onClick={() => navigate(`/verify-email/${successData.token}`)}
-                                    className="btn btn-primary btn-full"
-                                >
-                                    Simuler la vérification
-                                </button>
-                            </div>
-                        )}
-
+                        {/* Suppression de la simulation de vérification en production */}
+                        
                         <Link to="/login" style={{ color: 'var(--brand-orange)', fontWeight: 700, fontSize: '1rem' }}>
                             {t('auth.register.back_to_login', 'Aller à la page de connexion')}
                         </Link>

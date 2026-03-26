@@ -120,7 +120,10 @@ router.post(
 
             // Envoyer l'email via EmailJS
             const sendVerificationEmail = require('../utils/emailJS');
-            const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email/${verificationToken}`;
+            // IMPORTANT : Utiliser le window.location.origin du FRONTEND si possible, 
+            // ou l'URL Netlify configurée dans CLIENT_URL pour que l'utilisateur 
+            // soit redirigé vers le site et non l'API directement.
+            const verificationLink = `${process.env.CLIENT_URL || 'https://cs-alert.netlify.app'}/verify-email/${verificationToken}`;
             
             console.log('📧 Tentative d\'envoi d\'email de vérification à:', user.email);
             console.log('🔗 Lien de vérification:', verificationLink);
@@ -456,38 +459,43 @@ router.post(
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/verify-email/:token', async (req, res) => {
     try {
-        const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-
-        const user = await User.findOne({
-            emailVerificationToken: hashedToken,
-            emailVerificationExpire: { $gt: Date.now() },
-        });
-
-        if (!user) {
-            return res.status(400).send(`
-                <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-                    <h2 style="color: #d32f2f;">Lien invalide ou expiré</h2>
-                    <p>Le lien de vérification est invalide ou a expiré (validité de 10 minutes).</p>
-                    <p>Veuillez vous réinscrire ou demander un nouveau lien.</p>
-                </div>
-            `);
+        const token = req.params.token;
+        if (!token) {
+            return res.status(400).json({ success: false, message: 'Jeton manquant.' });
         }
 
-        user.isEmailVerified = true;
-        user.emailVerificationToken = undefined;
-        user.emailVerificationExpire = undefined;
-        await user.save({ validateBeforeSave: false });
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-        res.send(`
-            <div style="font-family: Arial, sans-serif; text-align: center; padding: 50px;">
-                <h2 style="color: #2e7d32;">E-mail vérifié avec succès !</h2>
-                <p>Votre compte est désormais actif.</p>
-                <p>Vous pouvez maintenant retourner sur l'application <strong>Community Security Alert</strong> pour vous connecter.</p>
-            </div>
-        `);
+        // Utilisation de findOneAndUpdate pour une opération atomique et plus rapide
+        const user = await User.findOneAndUpdate(
+            {
+                emailVerificationToken: hashedToken,
+                emailVerificationExpire: { $gt: Date.now() },
+            },
+            {
+                $set: { isEmailVerified: true },
+                $unset: { emailVerificationToken: 1, emailVerificationExpire: 1 }
+            },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: 'Le lien de vérification est invalide ou a expiré (validité de 10 minutes).'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'E-mail vérifié avec succès ! Votre compte est désormais actif.'
+        });
     } catch (err) {
         console.error('Erreur verify-email :', err.message);
-        res.status(500).send('Erreur serveur lors de la vérification.');
+        res.status(500).json({
+            success: false,
+            message: 'Erreur serveur lors de la vérification.'
+        });
     }
 });
 
