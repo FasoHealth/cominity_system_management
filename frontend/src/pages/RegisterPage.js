@@ -74,7 +74,8 @@ const RegisterPage = () => {
 
                     setSuccessData({
                         message: "Un email contenant un lien de vérification vous a été envoyé. Veuillez vérifier votre boîte de réception (et vos spams).",
-                        email: form.email
+                        email: form.email,
+                        token: data.verificationToken // Ajout du token ici
                     });
                 } catch (emailError) {
                     console.error("Erreur EmailJS:", emailError);

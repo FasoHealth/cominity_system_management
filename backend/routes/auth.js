@@ -141,6 +141,7 @@ router.post(
             res.status(201).json({
                 success: true,
                 message: 'Inscription réussie. Veuillez vérifier votre adresse e-mail via le lien envoyé.',
+                verificationToken: verificationToken, // Token ajouté pour le frontend
                 devLink: process.env.NODE_ENV === 'development' ? verificationLink : undefined
             });
         } catch (err) {
